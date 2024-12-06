@@ -6,7 +6,6 @@ import {
 import { useSidebarContext } from "../../../context/Sidebar";
 
 const Header = () => {
-  
   const { isSideBar, toggleSidebar } = useSidebarContext();
 
   return (
@@ -24,7 +23,7 @@ const Header = () => {
 
       {/* Logo */}
       <div className="flex flex-col items-center text-4xl pt-4 pb-2 w-full">
-        <h2>HMS</h2>
+        <h2 className="font-bold">HMS</h2>
         <div className="w-16 border-t-2 border-black">
           <hr />
         </div>

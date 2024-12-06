@@ -5,15 +5,16 @@ import { SidebarContextProvider } from "./context/Sidebar";
 
 function Layout() {
   return (
-    <div className="flex flex-col h-screen">
-      {/* Wrap only Sidebar and AppBar with SidebarContextProvider */}
+    <div className="flex h-screen">
+      {/* Sidebar context wrapped only around the Sidebar and AppBar */}
       <SidebarContextProvider>
-        {/* AppBar */}
-        <AppBar />
+        {/* Sidebar */}
+        <SideBar />
 
-        <div className="flex flex-1">
-          {/* Sidebar */}
-          <SideBar />
+        {/* Main content container */}
+        <div className="flex flex-col w-full">
+          {/* AppBar */}
+          <AppBar />
 
           {/* Main Content */}
           <div className="flex-1 bg-gray-100 p-5 overflow-auto">
