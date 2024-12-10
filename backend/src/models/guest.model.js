@@ -29,25 +29,22 @@ const guestSchema = new Schema(
     },
     phone: {
       type: String,
-      required: true,
       unique: true,
     },
     cnic: {
       type: String,
-      required: true,
       unique: true,
     },
     country: {
       type: String,
-      required: true,
     },
+
     city: {
       type: String,
-      required: true,
     },
+
     address: {
       type: String,
-      required: true,
     },
     refreshToken: {
       type: String,
@@ -59,9 +56,9 @@ const guestSchema = new Schema(
 guestSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
-    this.password = await bcrypt.hash(this.password, 10)
-    next()
-})
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
 guestSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
