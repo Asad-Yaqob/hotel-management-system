@@ -1,7 +1,7 @@
 import { CiLogout } from "react-icons/ci";
 import { useSidebarContext } from "../../context/Sidebar";
-import Header from "./components/Header";
-import Navigation from "./components/Navigation"
+import Header from "../../dashboard/sidebar/components/Header";
+import Navigation from "../../dashboard/sidebar/components/Navigation"
 
 const SideBar = () => {
   const { isSideBar } = useSidebarContext();
