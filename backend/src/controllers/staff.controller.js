@@ -1,4 +1,5 @@
 import asyncHandler from "../utils/asyncHandler.js";
+import jwt from "jsonwebtoken";
 
 import { Staff } from "../models/staff.model.js";
 import { ApiError } from "../utils/apiError.js";
@@ -6,6 +7,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { generateAccessAndRefreshTokens } from "./guest.controller.js";
 import { COOKIE_OPTIONS } from "../constants.js";
+import { Guest } from "../models/guest.model.js";
 
 const registerStaff = asyncHandler(async (req, res) => {
   // Get data from frontend
@@ -160,4 +162,87 @@ const logoutStaff = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Logged Out Successfully"));
 });
 
-export { registerStaff, loginStaff, logoutStaff };
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  const storedRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+  if (!storedRefreshToken) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  try {
+    const decodedToken = jwt.verify(
+      storedRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    let user = await Guest.findById(decodedToken._id);
+
+    if (!user) {
+      user = await Staff.findById(decodedToken._id);
+    }
+
+    if (!user) {
+      throw new ApiError(401, "Invalid refresh token");
+    }
+
+    if (storedRefreshToken !== user.refreshToken) {
+      throw new ApiError(401, "Refresh token is expired or used");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+      user._id
+    );
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+      .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+      .json(
+        new ApiResponse(
+          200,
+          {
+            accessToken,
+            refreshToken,
+          },
+          "Access Token Refreshed"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(401, error?.message || "Invalid refresh token");
+  }
+});
+
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!(oldPassword && newPassword)) {
+    throw new ApiError(400, "Fields canot be empty");
+  }
+
+  const user = await Staff.findById(req.user?._id);
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized user");
+  }
+
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+export {
+  registerStaff,
+  loginStaff,
+  logoutStaff,
+  refreshAccessToken,
+  changeCurrentPassword,
+};

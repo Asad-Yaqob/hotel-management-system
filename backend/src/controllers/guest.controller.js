@@ -5,35 +5,30 @@ import asyncHandler from "../utils/asyncHandler.js";
 import { COOKIE_OPTIONS } from "../constants.js";
 import { Staff } from "../models/staff.model.js";
 
-const generateAccessAndRefreshTokens = async (guestId) => {
+const generateAccessAndRefreshTokens = async (userId) => {
   try {
-    const guest = await Guest.findById(guestId);
+    // check if it is a guest
+    let user = await Guest.findById(userId);
 
-    if (!guest) {
+    if (!user) {
       // if guest does not exist it means it is a staff member.
-      const staff = await Staff.findById(guestId);
-
-      if(!staff) {
-        throw new ApiError(404, "Staff not found. unable to generate accessToken and refreshToken.");
-      }
-
-      const accessToken = staff.generateAccessToken();
-      const refreshToken = staff.generateRefreshToken();
-
-       staff.refreshToken = refreshToken;
-       await staff.save({ validateBeforeSave: false });
-
-       return { accessToken, refreshToken };
+      user = await Staff.findById(userId);
     }
 
-    const accessToken = guest.generateAccessToken();
-    const refreshToken = guest.generateRefreshToken();
+    if (!user) {
+      throw new ApiError(
+        404,
+        "user not found. unable to generate accessToken and refreshToken."
+      );
+    }
 
-    guest.refreshToken = refreshToken;
-    await guest.save({ validateBeforeSave: false });
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
-    
   } catch (error) {
     throw new ApiError(
       500,
@@ -143,7 +138,6 @@ const loginGuest = asyncHandler(async (req, res) => {
 });
 
 const logoutGuest = asyncHandler(async (req, res) => {
-
   await Guest.findByIdAndUpdate(
     req.user._id,
     {
@@ -154,13 +148,13 @@ const logoutGuest = asyncHandler(async (req, res) => {
     {
       new: true,
     }
-  )
+  );
 
   return res
-  .status(200)
-  .clearCookie("accessToken", COOKIE_OPTIONS)
-  .clearCookie("refreshToken", COOKIE_OPTIONS)
-  .json(new ApiResponse(200, {}, "Loged out"))
+    .status(200)
+    .clearCookie("accessToken", COOKIE_OPTIONS)
+    .clearCookie("refreshToken", COOKIE_OPTIONS)
+    .json(new ApiResponse(200, {}, "Loged out"));
 });
 
 export {
