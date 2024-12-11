@@ -18,9 +18,11 @@ app.use(cookieParser());
 
 // import routes
 import guestRouter from "./routes/guest.routes.js";
+import staffRouter from "./routes/staff.routes.js";
 
 
 // declare routes
-app.use("/api/v1/guests", guestRouter);
+app.use("/api/v1/guest", guestRouter);
+app.use("/api/v1/staff", staffRouter);
 
 export default app;

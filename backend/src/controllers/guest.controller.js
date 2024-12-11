@@ -3,10 +3,29 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { COOKIE_OPTIONS } from "../constants.js";
+import { Staff } from "../models/staff.model.js";
 
 const generateAccessAndRefreshTokens = async (guestId) => {
   try {
     const guest = await Guest.findById(guestId);
+
+    if (!guest) {
+      // if guest does not exist it means it is a staff member.
+      const staff = await Staff.findById(guestId);
+
+      if(!staff) {
+        throw new ApiError(404, "Staff not found. unable to generate accessToken and refreshToken.");
+      }
+
+      const accessToken = staff.generateAccessToken();
+      const refreshToken = staff.generateRefreshToken();
+
+       staff.refreshToken = refreshToken;
+       await staff.save({ validateBeforeSave: false });
+
+       return { accessToken, refreshToken };
+    }
+
     const accessToken = guest.generateAccessToken();
     const refreshToken = guest.generateRefreshToken();
 
@@ -14,6 +33,7 @@ const generateAccessAndRefreshTokens = async (guestId) => {
     await guest.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
+    
   } catch (error) {
     throw new ApiError(
       500,
@@ -143,4 +163,9 @@ const logoutGuest = asyncHandler(async (req, res) => {
   .json(new ApiResponse(200, {}, "Loged out"))
 });
 
-export { registerGuest, loginGuest, logoutGuest };
+export {
+  registerGuest,
+  loginGuest,
+  logoutGuest,
+  generateAccessAndRefreshTokens,
+};
