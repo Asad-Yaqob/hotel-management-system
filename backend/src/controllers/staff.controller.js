@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 import { Staff } from "../models/staff.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
 import { generateAccessAndRefreshTokens } from "./guest.controller.js";
 import { COOKIE_OPTIONS } from "../constants.js";
 import { Guest } from "../models/guest.model.js";
@@ -239,10 +242,91 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
+const changeAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is missing");
+  }
+
+  await deleteFromCloudinary(req.user?.avatar);
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  if (!avatar.url) {
+    throw new ApiError(400, "Error while uploading avatar.");
+  }
+
+  const user = await Staff.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken -cnic -phoneNo");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar changes successfully."));
+});
+
+const changeDetails = asyncHandler(async (req, res) => {
+  const {
+    staffName,
+    email,
+    phoneNo,
+    cnic,
+    streetAddress,
+    country,
+    city,
+  } = req.body;
+
+  // Validate input
+  if (!(staffName && email && phoneNo && cnic && streetAddress && country && city)) {
+    throw new ApiError(400, "All fields are mandatory.");
+  }
+
+
+  // Update user details
+  const user = await Staff.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        staffName,
+        email,
+        phoneNo,
+        cnic,
+        streetAddress,
+        country,
+        city,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken -cnic -phoneNo");
+
+
+  if (!user) {
+    throw new ApiError(400, "Something went wrong.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User updated successfully."));
+});
+
+
 export {
   registerStaff,
   loginStaff,
   logoutStaff,
   refreshAccessToken,
   changeCurrentPassword,
+  changeAvatar,
+  changeDetails,
 };
