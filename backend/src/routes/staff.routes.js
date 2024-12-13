@@ -19,10 +19,10 @@ staffRouter.route("/refresh-token").post(refreshAccessToken);
 
 // secured routes
 staffRouter.route("/logout").post(verifyJwt, logoutStaff);
-staffRouter.route("/change-password").post(verifyJwt, changeCurrentPassword);
+staffRouter.route("/change-password").patch(verifyJwt, changeCurrentPassword);
 staffRouter
   .route("/change-avatar")
-  .post(verifyJwt, upload.single("avatar"), changeAvatar);
-staffRouter.route("/change-details").post(verifyJwt, changeDetails);
+  .patch(verifyJwt, upload.single("avatar"), changeAvatar);
+staffRouter.route("/change-details").put(verifyJwt, changeDetails);
 
 export default staffRouter;
