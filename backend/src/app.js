@@ -20,10 +20,12 @@ app.use(cookieParser());
 import guestRouter from "./routes/guest.routes.js";
 import staffRouter from "./routes/staff.routes.js";
 import roomRouter from "./routes/room.routes.js";
+import cleaningRouter from "./routes/cleaning.routes.js";
 
 // declare routes
 app.use("/api/v1/guest", guestRouter);
 app.use("/api/v1/staff", staffRouter);
 app.use("/api/v1/room", roomRouter);
+app.use("/api/v1/cleaning", cleaningRouter);
 
 export default app;
