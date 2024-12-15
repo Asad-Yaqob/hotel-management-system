@@ -15,9 +15,9 @@ const maintainenceSchema = new Schema(
     description: { type: String, required: true },
     reportedBy: {
       type: Schema.Types.ObjectId,
-      refPath: "reportedByRole", 
+      refPath: "reported_By_Role",
     },
-    reportedByRole: {
+    reported_By_Role: {
       type: String,
       enum: ["Staff", "Guest"],
       required: true,

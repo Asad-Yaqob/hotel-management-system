@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
-export const verifyJwt = asyncHandler(async (req, _, next) => {
+const verifyJwt = asyncHandler(async (req, _, next) => {
   try {
     const token =
       req.cookies?.accessToken ||
@@ -38,3 +38,23 @@ export const verifyJwt = asyncHandler(async (req, _, next) => {
     throw new ApiError(401, error?.message || "Invalid access token");
   }
 });
+
+const roleAuthorization = (allowedRoles) => {
+  return async (req, _, next) => {
+  
+    const user = req.user; 
+
+    // Check if the user's role is allowed
+    if (!user || !allowedRoles.includes(user.role)) {
+     throw new ApiError(
+       403,
+       "You don't have permission to perform this action"
+     );
+    }
+
+    // Continue to the next middleware or route handler if authorized
+    next();
+  };
+};
+
+export { verifyJwt, roleAuthorization };

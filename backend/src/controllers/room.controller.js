@@ -213,6 +213,44 @@ const changeImage = asyncHandler(async (req, res) => {
     );
 });
 
+const updateRoomStatus = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  const { status } = req.body; 
+
+  // Validate the inputs
+  if (!roomId) {
+    throw new ApiError(400, "Room ID is required");
+  }
+
+  if (
+    !status ||
+    !["clean", "dirty", "out-of-service", "maintainence"].includes(status)
+  ) {
+    throw new ApiError(
+      400,
+      "Valid status is required (clean, dirty, out of service, maintainence)"
+    );
+  }
+
+  // Update the room status
+  const updatedRoom = await Room.findByIdAndUpdate(
+    roomId,
+    { $set: { status } },
+    { new: true } 
+  );
+
+  if (!updatedRoom) {
+    throw new ApiError(404, "Room not found");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedRoom, "Room status updated successfully")
+    );
+});
+
+
 export {
   addRoom,
   getRooms,
@@ -220,4 +258,5 @@ export {
   deleteRoom,
   getSingleRoom,
   changeImage,
+  updateRoomStatus,
 };
