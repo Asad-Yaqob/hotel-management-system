@@ -18,7 +18,7 @@ staffRouter.route("/login").post(loginStaff);
 staffRouter.route("/refresh-token").post(refreshAccessToken);
 
 // secured routes
-staffRouter.route("/logout").post(verifyJwt, logoutStaff);
+staffRouter.route("/logout").patch(verifyJwt, logoutStaff);
 staffRouter.route("/change-password").patch(verifyJwt, changeCurrentPassword);
 staffRouter
   .route("/change-avatar")

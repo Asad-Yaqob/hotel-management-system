@@ -21,7 +21,6 @@ const guestSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
     },
     password: {
       type: String,
@@ -32,24 +31,21 @@ const guestSchema = new Schema(
       type: String,
       unique: true,
     },
-    cnic: {
-      type: String,
-      unique: true,
-    },
     country: {
       type: String,
     },
-
     city: {
       type: String,
     },
-
     address: {
       type: String,
     },
     refreshToken: {
       type: String,
     },
+    cardNo: { type: Number },
+    cvv: { type: Number },
+    cashPayment: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
