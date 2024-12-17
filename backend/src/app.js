@@ -24,6 +24,7 @@ import cleaningRouter from "./routes/cleaning.routes.js";
 import maintainenceRouter from "./routes/maintainence.routes.js";
 import bookingRouter from "./routes/booking.routes.js";
 import serviceRouter from "./routes/service.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 
 // declare routes
 app.use("/api/v1/guest", guestRouter);
@@ -33,5 +34,6 @@ app.use("/api/v1/cleaning", cleaningRouter);
 app.use("/api/v1/maintainence", maintainenceRouter);
 app.use("/api/v1/booking", bookingRouter);
 app.use("/api/v1/service", serviceRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
 export default app;
