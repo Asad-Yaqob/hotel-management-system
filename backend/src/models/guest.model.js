@@ -29,7 +29,6 @@ const guestSchema = new Schema(
     },
     phone: {
       type: String,
-      unique: true,
     },
     country: {
       type: String,
