@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { useNavigate } from "react-router-dom";
+
 
 const StaffAuthContext = createContext();
 
@@ -14,7 +14,7 @@ export const StaffAuthContextProvider = ({ children }) => {
     accessToken: null,
   });
 
-  const navigate = useNavigate();
+
   const baseUrl = "http://localhost:8000/api/v1";
 
   // Check auth status on mount and after state changes
@@ -138,7 +138,6 @@ export const StaffAuthContextProvider = ({ children }) => {
         isLoggedIn: false,
         accessToken: null,
       });
-      navigate("/");
     }
   };
 

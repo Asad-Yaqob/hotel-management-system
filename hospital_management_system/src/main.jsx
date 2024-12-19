@@ -4,7 +4,7 @@ import {
   RouterProvider,
   createBrowserRouter,
 } from "react-router-dom";
-
+import  RootProvider  from "./context/RootProvider"
 import "./index.css";
 
 //  Dashboard imports
@@ -57,6 +57,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
+    <RootProvider >
       <RouterProvider router={router} />
+    </RootProvider>
   </StrictMode>
 );

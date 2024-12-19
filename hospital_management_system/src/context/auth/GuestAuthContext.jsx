@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export const AuthContext = createContext();
@@ -15,7 +14,6 @@ export const AuthProvider = ({ children }) => {
     accessToken: null,
   });
 
-  const navigate = useNavigate();
   const baseUrl = "http://localhost:8000/api/v1";
 
   // Check auth status on mount and after state changes
@@ -125,7 +123,6 @@ export const AuthProvider = ({ children }) => {
         isLoggedIn: false,
         accessToken: null,
       });
-      navigate("/");
     }
   };
 
