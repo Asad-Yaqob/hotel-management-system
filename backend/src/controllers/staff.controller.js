@@ -320,7 +320,6 @@ const changeDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User updated successfully."));
 });
 
-
 export {
   registerStaff,
   loginStaff,

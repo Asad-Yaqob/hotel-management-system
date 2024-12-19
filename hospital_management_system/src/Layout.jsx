@@ -1,6 +1,6 @@
 
-import AppBar from "./dashboard/appbar/AppBar";
-import SideBar from "./dashboard/sidebar/SideBar";
+import AppBar from "./dashboard/components/appbar/AppBar";
+import SideBar from "./dashboard/components/sidebar/SideBar";
 import { Outlet } from "react-router-dom";
 import { SidebarContextProvider } from "./context/Sidebar";
 
@@ -8,6 +8,7 @@ function DashboardLayout() {
   return (
     <div className="flex h-screen">
       {/* Sidebar context wrapped only around the Sidebar and AppBar */}
+      
       <SidebarContextProvider>
         {/* Sidebar */}
         <SideBar />

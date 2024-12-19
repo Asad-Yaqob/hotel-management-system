@@ -1,95 +1,252 @@
-// pages/Staff.js
 import React from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
-const Staff = () => {
+function StaffPage() {
+  const formik = useFormik({
+    initialValues: {
+      staffName: "",
+      email: "",
+      password: "",
+      phoneNo: "",
+      streetAddress: "",
+      country: "",
+      city: "",
+      avatar: "",
+      role: "",
+    },
+    validationSchema: Yup.object({
+      staffName: Yup.string().required("Staff name is required"),
+      email: Yup.string()
+        .email("Invalid email address")
+        .required("Email is required"),
+      password: Yup.string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+      phoneNo: Yup.string()
+        .matches(/^\d+$/, "Phone number must be numeric")
+        .required("Phone number is required"),
+      streetAddress: Yup.string().required("Street address is required"),
+      country: Yup.string().required("Country is required"),
+      city: Yup.string().required("City is required"),
+      avatar: Yup.string()
+        .url("Invalid URL for avatar")
+        .required("Avatar is required"),
+      role: Yup.string().required("Role is required"),
+    }),
+    onSubmit: (values) => {
+      console.log("Form Submitted:", values);
+      // Handle form submission here
+    },
+  });
+
   return (
-    <div className="staff bg-gray-100 min-h-screen p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
+    <div className="p-6 bg-white shadow-md rounded-lg max-w-4xl mx-auto">
+      <h2 className="text-2xl font-semibold text-gray-700 mb-4">
         Staff Management
-      </h1>
+      </h2>
+      <form onSubmit={formik.handleSubmit} className="space-y-6">
+        {/* Staff Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Staff Name
+          </label>
+          <input
+            type="text"
+            name="staffName"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.staffName && formik.errors.staffName
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter staff name"
+            {...formik.getFieldProps("staffName")}
+          />
+          {formik.touched.staffName && formik.errors.staffName && (
+            <p className="text-red-500 text-sm">{formik.errors.staffName}</p>
+          )}
+        </div>
 
-      {/* Add Staff Form */}
-      <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Add New Staff
-        </h2>
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            className="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            placeholder="Position"
-            className="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Email
+          </label>
           <input
             type="email"
-            placeholder="Email"
-            className="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            name="email"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.email && formik.errors.email
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter email"
+            {...formik.getFieldProps("email")}
           />
-          <input
-            type="tel"
-            placeholder="Phone Number"
-            className="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="col-span-1 md:col-span-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Add Staff
-          </button>
-        </form>
-      </div>
+          {formik.touched.email && formik.errors.email && (
+            <p className="text-red-500 text-sm">{formik.errors.email}</p>
+          )}
+        </div>
 
-      {/* Staff Table */}
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Staff List</h2>
-        <table className="w-full bg-white border border-gray-300 rounded">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Position</th>
-              <th className="p-2 text-left">Email</th>
-              <th className="p-2 text-left">Phone</th>
-              <th className="p-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-t">
-              <td className="p-2">John Doe</td>
-              <td className="p-2">Manager</td>
-              <td className="p-2">johndoe@example.com</td>
-              <td className="p-2">+123456789</td>
-              <td className="p-2 flex space-x-2">
-                <button className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600">
-                  Edit
-                </button>
-                <button className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600">
-                  Delete
-                </button>
-              </td>
-            </tr>
-            <tr className="border-t">
-              <td className="p-2">Jane Smith</td>
-              <td className="p-2">Receptionist</td>
-              <td className="p-2">janesmith@example.com</td>
-              <td className="p-2">+987654321</td>
-              <td className="p-2 flex space-x-2">
-                <button className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600">
-                  Edit
-                </button>
-                <button className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600">
-                  Delete
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        {/* Password */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Password
+          </label>
+          <input
+            type="password"
+            name="password"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.password && formik.errors.password
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter password"
+            {...formik.getFieldProps("password")}
+          />
+          {formik.touched.password && formik.errors.password && (
+            <p className="text-red-500 text-sm">{formik.errors.password}</p>
+          )}
+        </div>
+
+        {/* Phone Number */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Phone Number
+          </label>
+          <input
+            type="text"
+            name="phoneNo"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.phoneNo && formik.errors.phoneNo
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter phone number"
+            {...formik.getFieldProps("phoneNo")}
+          />
+          {formik.touched.phoneNo && formik.errors.phoneNo && (
+            <p className="text-red-500 text-sm">{formik.errors.phoneNo}</p>
+          )}
+        </div>
+
+        {/* Street Address */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Street Address
+          </label>
+          <input
+            type="text"
+            name="streetAddress"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.streetAddress && formik.errors.streetAddress
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter street address"
+            {...formik.getFieldProps("streetAddress")}
+          />
+          {formik.touched.streetAddress && formik.errors.streetAddress && (
+            <p className="text-red-500 text-sm">
+              {formik.errors.streetAddress}
+            </p>
+          )}
+        </div>
+
+        {/* Country */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Country
+          </label>
+          <input
+            type="text"
+            name="country"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.country && formik.errors.country
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter country"
+            {...formik.getFieldProps("country")}
+          />
+          {formik.touched.country && formik.errors.country && (
+            <p className="text-red-500 text-sm">{formik.errors.country}</p>
+          )}
+        </div>
+
+        {/* City */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            City
+          </label>
+          <input
+            type="text"
+            name="city"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.city && formik.errors.city
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter city"
+            {...formik.getFieldProps("city")}
+          />
+          {formik.touched.city && formik.errors.city && (
+            <p className="text-red-500 text-sm">{formik.errors.city}</p>
+          )}
+        </div>
+
+        {/* Avatar */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Avatar URL
+          </label>
+          <input
+            type="text"
+            name="avatar"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.avatar && formik.errors.avatar
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter avatar URL"
+            {...formik.getFieldProps("avatar")}
+          />
+          {formik.touched.avatar && formik.errors.avatar && (
+            <p className="text-red-500 text-sm">{formik.errors.avatar}</p>
+          )}
+        </div>
+
+        {/* Role */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600">
+            Role
+          </label>
+          <input
+            type="text"
+            name="role"
+            className={`mt-1 block w-full border rounded-md p-2 ${
+              formik.touched.role && formik.errors.role
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            placeholder="Enter role"
+            {...formik.getFieldProps("role")}
+          />
+          {formik.touched.role && formik.errors.role && (
+            <p className="text-red-500 text-sm">{formik.errors.role}</p>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200"
+        >
+          Submit
+        </button>
+      </form>
     </div>
   );
-};
+}
 
-export default Staff;
+export default StaffPage;

@@ -1,5 +1,5 @@
 import { CiSearch } from "react-icons/ci";
-import { useSidebarContext } from "../../context/Sidebar";
+import { useSidebarContext } from "../../../context/Sidebar";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import Dropdown from "./Dropdown";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";

@@ -24,10 +24,6 @@ const staffSchema = new Schema(
       type: String,
       required: true,
     },
-    cnic: {
-      type: String,
-      required: true,
-    },
     streetAddress: {
       type: String,
       required: true,

@@ -10,12 +10,14 @@ import {
   registerStaff,
 } from "../controllers/staff.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { loginStatus } from "../controllers/guest.controller.js";
 
 const staffRouter = Router();
 
 staffRouter.route("/register").post(upload.single("avatar"), registerStaff);
 staffRouter.route("/login").post(loginStaff);
 staffRouter.route("/refresh-token").post(refreshAccessToken);
+staffRouter.route("/auth-status").get(loginStatus);
 
 // secured routes
 staffRouter.route("/logout").patch(verifyJwt, logoutStaff);

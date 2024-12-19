@@ -37,6 +37,18 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
+const getGuests = asyncHandler(async (_, res) => {
+  try {
+    const guests = await Guest.find();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, guests, "Guests fetched successfully."));
+  } catch (error) {
+    throw new ApiError(500, "Unable to retrieve guests: " + error);
+  }
+});
+
 const registerGuest = asyncHandler(async (req, res) => {
   // get data firstname, lastname, email, password
   // validate isEmpty, already exists,
@@ -157,9 +169,26 @@ const logoutGuest = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Loged out"));
 });
 
+const loginStatus = (req, res) => {
+  const accessToken = req.cookies["accessToken"];
+  const refreshToken = req.cookies["refreshToken"];
+
+  if (accessToken || refreshToken) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, { accessToken, refreshToken }, "user is present")
+      );
+  }
+
+  return res.status(200).json(new ApiResponse(200, {}, "user is not present"));
+};
+
 export {
   registerGuest,
+  getGuests,
   loginGuest,
   logoutGuest,
   generateAccessAndRefreshTokens,
+  loginStatus,
 };
