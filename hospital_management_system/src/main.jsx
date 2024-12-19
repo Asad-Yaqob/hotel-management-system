@@ -26,14 +26,15 @@ import Gallery from "./client/page/Gallery";
 import ClientLayout from "./ClientLayout"
 import HomePage from "./client/page/HomePage";
 
+
+
 // Create a single route structure
 const router = createBrowserRouter([
   {
     path: "/admin",
-    element: <DashboardLayout />,
+    element:  <DashboardLayout /> ,
     children: [
-      { index: true, element: <Login /> },
-      { path: "dashboard", element: <Dashboard /> },
+      { index:true,  element: <Dashboard /> },
       { path: "staff", element: <Staff /> },
       { path: "guest", element: <Guest /> },
       { path: "room", element: <Room /> },

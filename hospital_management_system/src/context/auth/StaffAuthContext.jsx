@@ -1,4 +1,5 @@
-import { createContext } from "react";
+import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
 
 
 const StaffAuthContext = createContext();
@@ -12,6 +13,7 @@ export const StaffAuthContextProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     isLoggedIn: false,
     accessToken: null,
+    user: {}
   });
 
 
@@ -20,6 +22,7 @@ export const StaffAuthContextProvider = ({ children }) => {
   // Check auth status on mount and after state changes
   useEffect(() => {
     checkAuthStatus();
+    console.log(authState.user)
   }, []);
 
   const checkAuthStatus = async () => {
@@ -98,10 +101,13 @@ export const StaffAuthContextProvider = ({ children }) => {
         { withCredentials: true, validateStatus: (status) => status < 500 }
       );
 
+      console.log(response.data.data);
+
       if (response.status === 200 && response.data?.data) {
         setAuthState({
           isLoggedIn: true,
           accessToken: response.data.data.accessToken,
+          user: response.data.data.data
         });
         return { success: true };
       }
@@ -145,6 +151,7 @@ export const StaffAuthContextProvider = ({ children }) => {
     baseUrl,
     loading,
     isLoggedIn: authState.isLoggedIn,
+    accessToken: authState.accessToken,
     registerStaff,
     loginStaff,
     logoutStaff,

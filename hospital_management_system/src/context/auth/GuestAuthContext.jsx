@@ -24,11 +24,12 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
+  
       const response = await axios.get(`${baseUrl}/guest/auth-status`, {
         withCredentials: true,
       });
-
-      if (response.data?.data) {
+  
+      if (response.data?.data?.accessToken) {
         setAuthState({
           isLoggedIn: true,
           accessToken: response.data.data.accessToken,
@@ -40,7 +41,6 @@ export const AuthProvider = ({ children }) => {
         });
       }
     } catch (error) {
-      console.error("Error checking auth status:", error);
       setAuthState({
         isLoggedIn: false,
         accessToken: null,
@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  
 
   const signUp = async (firstName, lastName, email, password) => {
     try {

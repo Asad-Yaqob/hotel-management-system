@@ -6,7 +6,7 @@ const RootProvider = ({ children }) => {
   return (
     <AuthProvider>
       <StaffAuthContextProvider>
-        <SidebarContextProvider>{children}</SidebarContextProvider>
+        {children}
       </StaffAuthContextProvider>
     </AuthProvider>
   );
