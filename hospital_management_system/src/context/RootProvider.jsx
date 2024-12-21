@@ -1,14 +1,11 @@
-import { SidebarContextProvider } from "../context/Sidebar";
-import { AuthProvider } from "../context/auth/GuestAuthContext"; // Assuming you have this provider
-import { StaffAuthContextProvider } from "../context/auth/StaffAuthContext"; // Assuming you have this provider
+import { StaffAuthProvider } from "../context/auth/StaffAuthContext"; //
+import { GuestAuthProvider } from "./auth/GuestAuthContext";
 
 const RootProvider = ({ children }) => {
   return (
-    <AuthProvider>
-      <StaffAuthContextProvider>
-        {children}
-      </StaffAuthContextProvider>
-    </AuthProvider>
+    <StaffAuthProvider>
+      <GuestAuthProvider>{children}</GuestAuthProvider>
+    </StaffAuthProvider>
   );
 };
 

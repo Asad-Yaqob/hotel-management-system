@@ -1,19 +1,16 @@
-
 import AppBar from "./dashboard/components/appbar/AppBar";
 import SideBar from "./dashboard/components/sidebar/SideBar";
 import { Outlet } from "react-router-dom";
 import { SidebarContextProvider } from "./context/Sidebar";
-import { useStaffAuthContext } from "./context/auth/StaffAuthContext";
+import { useStaffAuth } from "./context/auth/StaffAuthContext";
 import Login from "./dashboard/pages/auth/Login";
-import { useEffect } from "react";
-
-
 
 function DashboardLayout() {
-  const { isLoggedIn } = useStaffAuthContext();
+  const { isAuthenticated, isLoading } = useStaffAuth();
 
+ 
   // Render the login screen if the user is not logged in
-  if (isLoggedIn) {
+  if (!isAuthenticated) {
     return <Login />;
   }
 
@@ -29,7 +26,6 @@ function DashboardLayout() {
         <div className="flex flex-col w-full">
           {/* AppBar */}
           <AppBar />
-
           {/* Main Content */}
           <div className="flex-1 bg-gray-100 p-5 overflow-auto">
             <Outlet />
@@ -41,6 +37,3 @@ function DashboardLayout() {
 }
 
 export default DashboardLayout;
-
-
-

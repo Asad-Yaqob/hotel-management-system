@@ -1,141 +1,149 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-export const AuthContext = createContext();
+const GuestAuthContext = createContext(null);
 
-export const useAuthContext = () => {
-  return useContext(AuthContext);
-};
+export const GuestAuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-export const AuthProvider = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const [authState, setAuthState] = useState({
-    isLoggedIn: false,
-    accessToken: null,
-  });
+  const baseURl = "http://localhost:8000/api/v1";
 
-  const baseUrl = "http://localhost:8000/api/v1";
-
-  // Check auth status on mount and after state changes
   useEffect(() => {
-    checkAuthStatus();
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      setAccessToken(token);
+      checkAuthStatus();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const checkAuthStatus = async () => {
     try {
-      setLoading(true);
-  
-      const response = await axios.get(`${baseUrl}/guest/auth-status`, {
+      const response = await axios.get(`${baseURl}/guest/auth-status`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
       });
-  
-      if (response.data?.data?.accessToken) {
-        setAuthState({
-          isLoggedIn: true,
-          accessToken: response.data.data.accessToken,
-        });
-      } else {
-        setAuthState({
-          isLoggedIn: false,
-          accessToken: null,
-        });
+
+      if (response?.data?.accessToken) {
+        setUser(response.data.user);
+        setAccessToken(response.data.accessToken);
+        setIsAuthenticated(true);
       }
     } catch (error) {
-      setAuthState({
-        isLoggedIn: false,
-        accessToken: null,
-      });
+      console.error("Auth status check failed:", error);
     } finally {
-      setLoading(false);
-    }
-  };
-  
-
-  const signUp = async (firstName, lastName, email, password) => {
-    try {
-      const response = await axios.post(
-        `${baseUrl}/guest/register`,
-        {
-          firstName,
-          lastName,
-          email,
-          password,
-        }
-      );
-
-      if (response.data?.data) {
-        await checkAuthStatus(); // Refresh auth state after successful signup
-        return { success: true };
-      }
-    } catch (error) {
-      console.error("Signup failed:", error);
-      return {
-        success: false,
-        error: error.response?.data?.message || "Signup failed",
-      };
+      setIsLoading(false);
     }
   };
 
   const login = async (email, password) => {
-   try {
-     const response = await axios.post(
-       `${baseUrl}/guest/login`,
-       { email, password },
-       { withCredentials: true, validateStatus: (status) => status < 500 } 
-     );
+    setIsLoading(true);
+    try {
+      const response = await axios.post(
+        `${baseURl}/guest/login`,
+        { email, password },
+        { withCredentials: true }
+      );
 
-     if (response.status === 200 && response.data?.data) {
-       setAuthState({
-         isLoggedIn: true,
-         accessToken: response.data.data.accessToken,
-       });
-       return { success: true };
-     }
+      if (response?.data?.data) {
+        setUser(response.data.data);
+        setIsAuthenticated(true);
+        localStorage.setItem("access_token", response.data.data.accessToken);
+        setIsLoading(false);
 
-     return { success: false, error: "Unexpected server response" };
-   } catch (error) {
-     return {
-       success: false,
-       error: error.response?.data?.message || "Login failed",
-     };
-   }
+        return { success: true };
+      }
 
+      setIsLoading(false);
+      return { success: false };
+    } catch (error) {
+      setIsLoading(false);
+      return { success: false, message: error.message || "Unable to login." };
+    }
+  };
+
+  const register = async (firstName, lastName, email, password) => {
+    if (
+      [firstName, lastName, email, password].includes(
+        (field) => field.trim() === ""
+      )
+    ) {
+      return { success: false, error: "All fields are mandatory" };
+    }
+
+    try {
+      setIsLoading(true);
+
+      const response = await axios.post(`${baseURl}/guest/register`, {
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+
+      if (response.status < 400) {
+        setIsLoading(false);
+        return { success: true };
+      }
+
+      return { success: false, error: "Failed to register" };
+    } catch (error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        error: error.message || "Unable to register guest.",
+      };
+    }
   };
 
   const logout = async () => {
     try {
-      await axios.patch(
-        `${baseUrl}/guest/logout`,
+      const response = await axios.patch(
+        `${baseURl}/guest/logout`,
         {},
         {
           withCredentials: true,
-          headers: authState.accessToken
-            ? {
-                Authorization: `Bearer ${authState.accessToken}`,
-              }
-            : {},
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
+
+      if (response.status === 200) {
+        console.log("Logout successful");
+        localStorage.removeItem("access_token");
+        setUser(null);
+        setAccessToken(null);
+        setIsAuthenticated(false);
+      }
     } catch (error) {
       console.error("Logout failed:", error);
-    } finally {
-      // Always clear local auth state, even if the server request fails
-      setAuthState({
-        isLoggedIn: false,
-        accessToken: null,
-      });
     }
   };
 
- 
   const value = {
-    baseUrl,
-    loading,
-    isLoggedIn: authState.isLoggedIn,
+    user,
+    accessToken,
+    isAuthenticated,
+    isLoading,
     login,
     logout,
-    signUp,
+    register,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <GuestAuthContext.Provider value={value}>
+      {children}
+    </GuestAuthContext.Provider>
+  );
+};
+
+export const useGuestAuth = () => {
+  const context = useContext(GuestAuthContext);
+  if (!context) {
+    throw new Error("useGuestAuth must be used within an AuthProvider");
+  }
+  return context;
 };

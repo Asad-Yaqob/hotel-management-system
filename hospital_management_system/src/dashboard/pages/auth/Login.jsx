@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom"
 import * as Yup from "yup";
@@ -6,11 +6,13 @@ import { Mail, Lock } from "lucide-react";
 import { Input } from "../../components/auth/Input";
 import { Button } from "../../components/auth/Button";
 import { LoginHeader } from "../../components/auth/LoginHeader";
-import { useStaffAuthContext } from "../../../context/auth/StaffAuthContext";
+import {  useStaffAuth } from "../../../context/auth/StaffAuthContext";
 
 function Login() {
-  const { loginStaff } = useStaffAuthContext();
+
+  const { login, isAuthenticated } = useStaffAuth();
   const navigate = useNavigate();
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -28,10 +30,11 @@ function Login() {
     onSubmit: async (values) => {
       console.log("Form Submitted")
       try {
-        const response =  await loginStaff(values.email, values.password);
+        const response =  await login(values.email, values.password);
+        // console.log(response);
         const { success } = response;
         if (success) {
-          navigate('/')
+          navigate('/admin')
         }
       } catch (error) {
         console.log("Something went wronge :" , error)    

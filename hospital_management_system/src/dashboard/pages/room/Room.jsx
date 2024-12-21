@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useFormik } from 'formik';
 import axios from 'axios';
-import { useStaffAuthContext } from '../../../context/auth/StaffAuthContext';
+import {  useStaffAuth  } from '../../../context/auth/StaffAuthContext';
 
 const Room = () => {
 
-      const { accessToken } = useStaffAuthContext();
+      const { accessToken } = useStaffAuth();
 
     // useEffect(()=> {
     //   console.log(accessToken)

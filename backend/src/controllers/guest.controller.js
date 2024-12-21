@@ -169,26 +169,32 @@ const logoutGuest = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Loged out"));
 });
 
-const loginStatus = (req, res) => {
-  const accessToken = req.cookies["accessToken"];
-  const refreshToken = req.cookies["refreshToken"];
+const isAuthenticated = (req, res) => {
+  try {
+    const accessToken = req.cookies.accessToken;
 
-  if (accessToken || refreshToken) {
+    return res.json({ success: true, user: req.user,  accessToken });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+const getCurrentGuest = asyncHandler(async (req, res) => {
+  try {
     return res
       .status(200)
-      .json(
-        new ApiResponse(200, { accessToken, refreshToken }, "user is present")
-      );
+      .json(new ApiResponse(200, req.user, "Guest fetched successfully."));
+  } catch (error) {
+    return res.status(500).json(new ApiResponse(500, {}, error.message));
   }
-
-  return res.status(200).json(new ApiResponse(200, {}, "user is not present"));
-};
+});
 
 export {
   registerGuest,
+  getCurrentGuest,
   getGuests,
   loginGuest,
   logoutGuest,
   generateAccessAndRefreshTokens,
-  loginStatus,
+  isAuthenticated,
 };

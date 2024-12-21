@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
-import * as Yup from "yup"; // Import Yup for validation schema
+import * as Yup from "yup";
+import { toast } from "react-toastify";
 import { RiMenu2Fill } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { IoCloseSharp } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import { useAuthContext } from "../context/auth/GuestAuthContext";
+import { useGuestAuth } from "../context/auth/GuestAuthContext";
 
 const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,7 +15,8 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [message, setMessage] = useState("");
 
-  const { isLoggedIn, login, signUp, logout } = useAuthContext();
+  const { isAuthenticated, login, register, logout, isLoading } =
+    useGuestAuth();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleRegisterModal = () => {
@@ -48,16 +50,28 @@ const Navbar = () => {
     }),
     onSubmit: async (values) => {
       try {
-        await signUp(
+        const response = await register(
           values.firstName,
           values.lastName,
           values.email,
           values.password
         );
-        setMessage("Registration Successful.");
-        toggleLoginModal();
+
+        if (response.success) {
+          setMessage("Registration Successful.");
+
+          toast.dismiss();
+          toast.success("Registration Successful.");
+          toggleLoginModal();
+          return;
+        }
+
+        toast.dismiss();
+        toast.error("Registration Failed.");
       } catch (error) {
         setMessage(error.response?.data?.message || "An error occurred.");
+        toast.dismiss();
+        toast.error(error.message || "Registration Failed.");
       }
     },
   });
@@ -76,18 +90,22 @@ const Navbar = () => {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
-
       const { success } = await login(values.email, values.password);
-      // console.log("Success : " + success);
 
       if (success) {
         setMessage("Login Successful.");
+
+        toast.dismiss();
+        toast.success("Login Successful.");
         setIsLoginModalOpen(!isLoginModalOpen);
         setIsModalOpen(false);
         setMenuOpen(false);
         return;
       }
+
       setMessage("Something went wrong.");
+      toast.dismiss();
+      toast.success("Login failed.");
     },
   });
 
@@ -118,7 +136,7 @@ const Navbar = () => {
               </li>
             )
           )}
-          {!isLoggedIn ? (
+          {!isAuthenticated ? (
             <button
               onClick={toggleRegisterModal}
               className="border px-5 py-1 rounded-md hover:bg-gray-700"
@@ -161,7 +179,7 @@ const Navbar = () => {
                 {item}
               </li>
             ))}
-            {!isLoggedIn ? (
+            {!isAuthenticated ? (
               <button
                 onClick={toggleRegisterModal}
                 className="border px-5 py-1 rounded-md hover:bg-gray-700 w-full text-center mt-4"
@@ -209,7 +227,7 @@ const Navbar = () => {
                     onChange={formikRegister.handleChange}
                     onBlur={formikRegister.handleBlur}
                     placeholder={placeholder}
-                    className="w-full px-3 py-2 border rounded-md text-sm"
+                    className="w-full px-3 py-2 border rounded-md text-sm "
                   />
                   {formikRegister.touched[name] &&
                     formikRegister.errors[name] && (
@@ -221,9 +239,14 @@ const Navbar = () => {
               ))}
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 mt-6 rounded-md hover:bg-blue-700 transition duration-300"
+                disabled={isLoading}
+                className={`w-full bg-indigo-500 mt-5 text-white py-2 rounded-md font-medium transition ${
+                  isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-indigo-600"
+                }`}
               >
-                Register
+                {isLoading ? "Registering..." : "Register"}
               </button>
               {message && (
                 <p className="mt-4 text-sm text-center text-red-600">
@@ -284,12 +307,16 @@ const Navbar = () => {
                   )}
                 </div>
               ))}
-
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 mt-6 rounded-md hover:bg-blue-700 transition duration-300"
+                disabled={isLoading}
+                className={`w-full bg-indigo-500 mt-5 text-white py-2 rounded-md font-medium transition ${
+                  isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-indigo-600"
+                }`}
               >
-                Login
+                {isLoading ? "Logging..." : "Login "}
               </button>
               {message && (
                 <p className="mt-4 text-sm text-center text-red-600">

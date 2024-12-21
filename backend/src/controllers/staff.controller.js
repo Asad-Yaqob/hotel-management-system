@@ -13,52 +13,43 @@ import { COOKIE_OPTIONS } from "../constants.js";
 import { Guest } from "../models/guest.model.js";
 
 const registerStaff = asyncHandler(async (req, res) => {
-  // Get data from frontend
-  // Validate data, if empty
-  // check if staff exists
-  // check avatar image, isEmpty
-  // upload image to cloudinary
-  //  create user object - create entry in db
-  // remove password,phone No,refresh token and cnic field from response
-  // check for user creation
-  // return res
-
   const {
     staffName,
     email,
     password,
     phoneNo,
-    cnic,
     streetAddress,
     country,
     city,
     role,
   } = req.body;
 
+  // Validate fields to make sure they are non-empty strings
   if (
     [
       staffName,
       email,
       password,
       phoneNo,
-      cnic,
       streetAddress,
       country,
       city,
       role,
-    ].some((field) => field?.trim() === "")
+    ].some((field) => !field || String(field).trim() === "")
   ) {
     throw new ApiError(400, "All fields are mandatory.");
   }
 
+  // Check if the staff already exists
   const existedStaff = await Staff.findOne({
-    $or: [{ email }, { phoneNo }, { cnic }],
+    $or: [{ email }, { phoneNo }],
   });
 
   if (existedStaff) {
     throw new ApiError(400, "Staff already exists with provided credentials.");
   }
 
+  // Handle avatar file upload
   const avatarLocalPath = req.file?.path;
 
   if (!avatarLocalPath) {
@@ -71,12 +62,12 @@ const registerStaff = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading the avatar.");
   }
 
+  // Create the new staff record
   const staff = await Staff.create({
     staffName,
     email,
     password,
     phoneNo,
-    cnic,
     streetAddress,
     country,
     city,
@@ -84,6 +75,7 @@ const registerStaff = asyncHandler(async (req, res) => {
     role,
   });
 
+  // Fetch the created staff without sensitive data
   const createdStaff = await Staff.findById(staff._id).select(
     "-password -refresToken -phoneNo -cnic"
   );
@@ -96,6 +88,7 @@ const registerStaff = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, createdStaff, "Staff registered successfully"));
 });
+
 
 const loginStaff = asyncHandler(async (req, res) => {
   // Get data from frontend
@@ -279,14 +272,13 @@ const changeDetails = asyncHandler(async (req, res) => {
     staffName,
     email,
     phoneNo,
-    cnic,
     streetAddress,
     country,
     city,
   } = req.body;
 
   // Validate input
-  if (!(staffName && email && phoneNo && cnic && streetAddress && country && city)) {
+  if (!(staffName && email && phoneNo  && streetAddress && country && city)) {
     throw new ApiError(400, "All fields are mandatory.");
   }
 
@@ -299,7 +291,6 @@ const changeDetails = asyncHandler(async (req, res) => {
         staffName,
         email,
         phoneNo,
-        cnic,
         streetAddress,
         country,
         city,
