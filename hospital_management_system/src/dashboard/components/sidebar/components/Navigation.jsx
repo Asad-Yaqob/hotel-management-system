@@ -9,20 +9,28 @@ import { IoIosPaper, IoIosSettings } from "react-icons/io";
 import { IoBed } from "react-icons/io5";
 import { FaServicestack } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import { useStaffAuth } from "../../../../context/auth/StaffAuthContext";
 
 const Navigation = () => {
-  
+  const { user } = useStaffAuth();
+
   const menuItems = [
-    { name: "dashboard", icon: <RiDashboard2Fill /> },
-    { name: "staff", icon: <MdManageAccounts /> },
-    { name: "guest", icon: <MdSupervisorAccount /> },
-    { name: "room", icon: <IoBed /> },
-    { name: "cleaning", icon: <MdDryCleaning /> },
-    { name: "maintainence", icon: <IoIosSettings /> },
-    { name: "service", icon: <FaServicestack /> },
-    { name: "booking", icon: <IoIosPaper /> },
+    { name: "Dashboard", icon: <RiDashboard2Fill /> },
+    { name: "Room", icon: <IoBed /> },
+    { name: "House Keeping", icon: <MdDryCleaning /> },
+    { name: "Maintainence", icon: <IoIosSettings /> },
+    { name: "Service", icon: <FaServicestack /> },
+    { name: "Booking", icon: <IoIosPaper /> },
   ];
 
+  // Add the "staff" link conditionally
+  if (user?.role === "admin") {
+    menuItems.splice(1, 0, { name: "staff", icon: <MdManageAccounts /> });
+  }
+
+  if (user?.role === "admin" || user?.role === "manager") {
+    menuItems.splice(2, 0, { name: "guest", icon: <MdSupervisorAccount /> });
+  }
   return (
     <div>
       {/* Navigation */}
@@ -34,7 +42,7 @@ const Navigation = () => {
           >
             {item.icon}
             <NavLink
-              to={item.name}
+              to={item.name.trim()}
               className={({ isActive }) =>
                 `${
                   isActive

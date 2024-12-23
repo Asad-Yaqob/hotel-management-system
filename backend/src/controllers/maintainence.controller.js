@@ -91,7 +91,7 @@ const updateStatus = asyncHandler( async (req, res) => {
   if (status === "resolved") {
     maintainanceRequest.resolutionDate = Date.now();
     room.status = "clean";
-  } else {
+  } else if (status === "in-progress") {
     room.status = "maintainence";
   }
   

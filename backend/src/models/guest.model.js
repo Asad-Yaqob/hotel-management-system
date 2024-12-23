@@ -39,6 +39,10 @@ const guestSchema = new Schema(
     address: {
       type: String,
     },
+    role: {
+      type: String,
+      default: "guest",
+    },
     refreshToken: {
       type: String,
     },

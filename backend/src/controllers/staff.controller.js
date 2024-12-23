@@ -89,7 +89,6 @@ const registerStaff = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdStaff, "Staff registered successfully"));
 });
 
-
 const loginStaff = asyncHandler(async (req, res) => {
   // Get data from frontend
   // Validate data, if empty
@@ -268,20 +267,12 @@ const changeAvatar = asyncHandler(async (req, res) => {
 });
 
 const changeDetails = asyncHandler(async (req, res) => {
-  const {
-    staffName,
-    email,
-    phoneNo,
-    streetAddress,
-    country,
-    city,
-  } = req.body;
+  const { staffName, email, phoneNo, streetAddress, country, city } = req.body;
 
   // Validate input
-  if (!(staffName && email && phoneNo  && streetAddress && country && city)) {
+  if (!(staffName && email && phoneNo && streetAddress && country && city)) {
     throw new ApiError(400, "All fields are mandatory.");
   }
-
 
   // Update user details
   const user = await Staff.findByIdAndUpdate(
@@ -301,7 +292,6 @@ const changeDetails = asyncHandler(async (req, res) => {
     }
   ).select("-password -refreshToken -cnic -phoneNo");
 
-
   if (!user) {
     throw new ApiError(400, "Something went wrong.");
   }
@@ -309,6 +299,67 @@ const changeDetails = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User updated successfully."));
+});
+
+const getAllStaff = asyncHandler(async (req, res) => {
+  try {
+    const allStaff = await Staff.find({ role: { $ne: "admin" } });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, allStaff, "Data fetched successfully."));
+  } catch (error) {
+    throw new ApiError(500, error.message || "Failed to get all staff");
+  }
+});
+
+const toggleStaffStatus = asyncHandler(async (req, res) => {
+  const { staffId, action } = req.body;
+
+  if (!staffId) {
+    throw new ApiError(400, "staffId is required.");
+  }
+
+  // Determine the new status based on the action
+  const newStatus =
+    action === "activate" ? true : action === "deactivate" ? false : null;
+
+  if (newStatus === null) {
+    throw new ApiError(400, "Invalid action. Use 'activate' or 'deactivate'.");
+  }
+
+  const staff = await Staff.findByIdAndUpdate(
+    staffId,
+    { isActive: newStatus },
+    { new: true }
+  );
+
+  if (!staff) {
+    throw new ApiError(404, "Staff member not found.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, staff, `Staff member successfully ${action}d.`));
+});
+
+const getStaffById = asyncHandler(async (req, res) => {
+  
+  const { staffId } = req.params;
+
+  if (!staffId) {
+    throw new ApiError(400, "Staff ID is required.");
+  }
+
+  const staff = await Staff.findById(staffId);
+
+  if (!staff) {
+    throw new ApiError(404, "Staff not found.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, staff, "staff fetched successfully"));
 });
 
 export {
@@ -319,4 +370,7 @@ export {
   changeCurrentPassword,
   changeAvatar,
   changeDetails,
+  getAllStaff,
+  toggleStaffStatus,
+  getStaffById,
 };

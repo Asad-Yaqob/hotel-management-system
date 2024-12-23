@@ -5,7 +5,7 @@ import { upload } from "../middlewares/multer.middleware.js";
 
 const serviceRouter = Router();
 
-serviceRouter.route("/").get(verifyJwt, getServices);
+serviceRouter.route("/get-services").get(verifyJwt, getServices);
 serviceRouter.route("/add").post(verifyJwt, upload.none(), addService);
 
 export default serviceRouter;

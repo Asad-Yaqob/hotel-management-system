@@ -1,22 +1,21 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { ToastContainer, toast, Bounce } from "react-toastify";
+import { ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import CSS for react-toastify
 import RootProvider from "./context/RootProvider";
 import "./index.css";
 
 // Dashboard imports
 import DashboardLayout from "./Layout";
-import Dashboard from "./dashboard/pages/dashboard/Dashboard";
-import Staff from "./dashboard/pages/staff/Staff";
-import Guest from "./dashboard/pages/guest/Guest";
-import Room from "./dashboard/pages/room/Room";
-import Cleaning from "./dashboard/pages/cleaning/Cleaning";
-import Maintainence from "./dashboard/pages/maintainence/Maintainence";
-import Booking from "./dashboard/pages/booking/Booking";
-import Service from "./dashboard/pages/service/Service";
-import Login from "./dashboard/pages/auth/Login";
+import Dashboard from "./dashboard/pages/Dashboard";
+import Staff from "./dashboard/pages/Staff";
+import Guest from "./dashboard/pages/Guest";
+import Room from "./dashboard/pages/Room";
+import Cleaning from "./dashboard/pages/HouseKeeping";
+import Maintainence from "./dashboard/pages/Maintainence";
+import Booking from "./dashboard/pages/Booking";
+import Service from "./dashboard/pages/Service";
 
 // Client imports
 import CheckOutRooms from "./client/page/CheckOutRooms";
@@ -25,6 +24,10 @@ import Gallery from "./client/page/Gallery";
 import ClientLayout from "./ClientLayout";
 import HomePage from "./client/page/HomePage";
 import ProfilePage from "./dashboard/pages/Profile";
+import StaffDetail from "./dashboard/pages/StaffDetail";
+import RoomDetails from "./dashboard/pages/RoomDetail";
+import GuestDetail from "./dashboard/pages/GuestDetail";
+import SchedualCleaning from "./dashboard/components/housekeeping/SchedualCleaning";
 
 // Create a single route structure
 const router = createBrowserRouter([
@@ -34,9 +37,13 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "staff", element: <Staff /> },
+      { path: "staffDetail/:staffId", element: <StaffDetail /> },
       { path: "guest", element: <Guest /> },
+      { path: "guestDetail/:guestId", element: <GuestDetail /> },
       { path: "room", element: <Room /> },
-      { path: "cleaning", element: <Cleaning /> },
+      { path: "roomDetail/:roomId", element: <RoomDetails /> },
+      { path: "House Keeping", element: <Cleaning /> },
+      { path: "schedualCleaning/:roomId", element: <SchedualCleaning /> },
       { path: "maintainence", element: <Maintainence /> },
       { path: "booking", element: <Booking /> },
       { path: "service", element: <Service /> },

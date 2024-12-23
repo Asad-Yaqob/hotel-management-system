@@ -1,69 +1,72 @@
-import React from "react";
+import React from 'react'
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { useStaffAuth } from "../../../context/auth/StaffAuthContext";
 
-const RegisterStaff = () => {
-  const { register, isLoading } = useStaffAuth();
+const AddStaff = () => {
 
-  const roles = ["manager", "housekeeping", "maintainence", "receptionist"];
+    const { register, isLoading } = useStaffAuth();
 
-  const formik = useFormik({
-    initialValues: {
-      staffName: "",
-      email: "",
-      password: "",
-      phoneNo: "",
-      streetAddress: "",
-      country: "",
-      city: "",
-      avatar: null,
-      role: "",
-    },
-    validationSchema: Yup.object({
-      staffName: Yup.string().required("Staff Name is required"),
-      email: Yup.string().email("Invalid email").required("Email is required"),
-      password: Yup.string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required"),
-      phoneNo: Yup.string()
-        .max(11, "Must be 11 digits")
-        .required("Phone Number is required"),
-      streetAddress: Yup.string().required("Street Address is required"),
-      country: Yup.string().required("Country is required"),
-      city: Yup.string().required("City is required"),
-      role: Yup.string().required("Role is required"),
-    }),
-    onSubmit: async (values) => {
-      const formData = new FormData();
+    const roles = ["manager", "housekeeping", "maintainence", "receptionist"];
 
-      formData.append("staffName", values.staffName);
-      formData.append("email", values.email);
-      formData.append("password", values.password);
-      formData.append("phoneNo", values.phoneNo);
-      formData.append("streetAddress", values.streetAddress);
-      formData.append("country", values.country);
-      formData.append("city", values.city);
-      formData.append("avatar", values.avatar);
-      formData.append("role", values.role);
+    const formik = useFormik({
+      initialValues: {
+        staffName: "",
+        email: "",
+        password: "",
+        phoneNo: "",
+        streetAddress: "",
+        country: "",
+        city: "",
+        avatar: null,
+        role: "",
+      },
+      validationSchema: Yup.object({
+        staffName: Yup.string().required("Staff Name is required"),
+        email: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        password: Yup.string()
+          .min(6, "Password must be at least 6 characters")
+          .required("Password is required"),
+        phoneNo: Yup.string()
+          .max(11, "Must be 11 digits")
+          .required("Phone Number is required"),
+        streetAddress: Yup.string().required("Street Address is required"),
+        country: Yup.string().required("Country is required"),
+        city: Yup.string().required("City is required"),
+        role: Yup.string().required("Role is required"),
+      }),
+      onSubmit: async (values) => {
+        const formData = new FormData();
 
-      const response = await register(formData);
+        formData.append("staffName", values.staffName);
+        formData.append("email", values.email);
+        formData.append("password", values.password);
+        formData.append("phoneNo", values.phoneNo);
+        formData.append("streetAddress", values.streetAddress);
+        formData.append("country", values.country);
+        formData.append("city", values.city);
+        formData.append("avatar", values.avatar);
+        formData.append("role", values.role);
 
-      if (response.success) {
-        toast.dismiss();
-        toast.success("Successfully registered.");
-      } else {
-        toast.dismiss();
-        toast.error(response.error || "Failed to register");
-      }
-    },
-  });
+        const response = await register(formData);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    formik.setFieldValue("avatar", file);
-  };
+        if (response.success) {
+          toast.dismiss();
+          toast.success("Successfully registered.");
+        } else {
+          toast.dismiss();
+          toast.error(response.error || "Failed to register");
+        }
+      },
+    });
+
+    const handleFileChange = (e) => {
+      const file = e.target.files[0];
+      formik.setFieldValue("avatar", file);
+    };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -157,6 +160,6 @@ const RegisterStaff = () => {
       </div>
     </div>
   );
-};
+}
 
-export default RegisterStaff;
+export default AddStaff

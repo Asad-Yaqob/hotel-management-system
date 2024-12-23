@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { baseURl } from "../../utils/constants";
 import axios from "axios";
 
 const GuestAuthContext = createContext(null);
@@ -8,8 +9,9 @@ export const GuestAuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [allGuests, setAllGuests] = useState([]);
+  const [currentGuest, setCurrentGuest] = useState(null);
 
-  const baseURl = "http://localhost:8000/api/v1";
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -46,13 +48,21 @@ export const GuestAuthProvider = ({ children }) => {
       const response = await axios.post(
         `${baseURl}/guest/login`,
         { email, password },
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       );
 
+      // console.log(response.data.data.data.user);
+
       if (response?.data?.data) {
-        setUser(response.data.data);
+        // console.log("User: " + response.data.data);
+        setUser(response.data.data.data.user);
         setIsAuthenticated(true);
-        localStorage.setItem("access_token", response.data.data.accessToken);
+        localStorage.setItem(
+          "access_token",
+          response.data.data.data.accessToken
+        );
         setIsLoading(false);
 
         return { success: true };
@@ -123,14 +133,162 @@ export const GuestAuthProvider = ({ children }) => {
     }
   };
 
+  const registerGuestByStaff = async (
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    address,
+    country,
+    city,
+    cardNo = null,
+    cvv = null,
+    cashPayment = false
+  ) => {
+    // Validation: Check mandatory fields
+   if (
+     [firstName, lastName, email, password, phone, country, city, address].some(
+       (field) => !field || (typeof field === "string" && !field.trim())
+     )
+   ) {
+     return {
+       success: false,
+       message: "All fields except payment details are required.",
+     };
+   }
+
+    // Validation: Payment details if not cash payment
+    if (!cashPayment && (!cardNo || !cvv)) {
+      return {
+        success: false,
+        message: "Card number and CVV are required for non-cash payments.",
+      };
+    }
+
+    try {
+      setIsLoading(true);
+
+      // API request to register guest by staff
+      const response = await axios.post(`${baseURl}/guest/register-by-staff`, {
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        country,
+        city,
+        address,
+        cardNo: cashPayment ? null : cardNo,
+        cvv: cashPayment ? null : cvv,
+        cashPayment,
+      }, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (response.status < 400) {
+        setIsLoading(false);
+        return { success: true };
+      }
+
+      return { success: false, message: "Failed to register guest." };
+    } catch (error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        message: error.message || "Unable to register guest.",
+      };
+    }
+  };
+
+  const fetchGuests = async (accessToken) => {
+    if (!accessToken) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.get(`${baseURl}/guest/all-guests`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (response.status === 200) {
+        // console.log(response.data.data);
+
+        setIsLoading(false);
+        setAllGuests(response.data.data);
+
+        return { success: true };
+      }
+
+      setIsLoading(false);
+      return {
+        success: true,
+        message: response.data || "Failed to fetch data",
+      };
+    } catch (error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        message: error.message || "Failed to fetch data",
+      };
+    }
+  };
+
+  const fetchGuestDetails = async (guestId) => {
+    if (!accessToken || !guestId) return;
+
+    setIsLoading(true);
+
+    try {
+      // Fetch specific staff details using guestId
+      const response = await axios.get(
+        `${baseURl}/guest/get-guest/${guestId}`,
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        setIsLoading(false);
+        setCurrentGuest(response.data.data);
+
+        return { success: true };
+      }
+
+      setIsLoading(false);
+
+      return {
+        success: false,
+        message: response.data || "Failed to fetch data",
+      };
+    } catch (error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        message: error.message || "Failed to fetch data",
+      };
+    }
+  };
+
   const value = {
     user,
     accessToken,
     isAuthenticated,
     isLoading,
+    allGuests,
+    currentGuest,
     login,
     logout,
     register,
+    registerGuestByStaff,
+    fetchGuests,
+    fetchGuestDetails,
+    setCurrentGuest,
   };
 
   return (

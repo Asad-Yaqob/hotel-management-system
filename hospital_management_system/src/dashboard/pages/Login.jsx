@@ -3,10 +3,10 @@ import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom"
 import * as Yup from "yup";
 import { Mail, Lock } from "lucide-react";
-import { Input } from "../../components/auth/Input";
-import { Button } from "../../components/auth/Button";
-import { LoginHeader } from "../../components/auth/LoginHeader";
-import {  useStaffAuth } from "../../../context/auth/StaffAuthContext";
+import { Input } from "../components/auth/Input";
+import { Button } from "../components/auth/Button";
+import { LoginHeader } from "../components/auth/LoginHeader";
+import {  useStaffAuth } from "../../context/auth/StaffAuthContext";
 
 function Login() {
 

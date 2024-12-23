@@ -104,6 +104,72 @@ const registerGuest = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdGuest, "Guets created successfully."));
 });
 
+const registerGuestByStaff = asyncHandler(async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    country,
+    address,
+    cardNo,
+    cvv,
+    cashPayment,
+  } = req.body;
+
+  // Validate required fields
+  if (
+    [firstName, lastName, email, password, phone, country, address].some(
+      (field) => field?.trim() === ""
+    )
+  ) {
+    throw new ApiError(400, "All fields except payment details are required.");
+  }
+
+  // Conditional validation for payment fields
+  if (!cashPayment && (!cardNo || !cvv)) {
+    throw new ApiError(
+      400,
+      "Card number and CVV are required for non-cash payments."
+    );
+  }
+
+  // Check if the guest already exists
+  const existedGuest = await Guest.findOne({ email });
+  if (existedGuest) {
+    throw new ApiError(409, "Guest already exists with the same email.");
+  }
+
+  // Create the new guest
+  const guest = await Guest.create({
+    firstName,
+    lastName,
+    email,
+    password, 
+    phone,
+    country,
+    address,
+    cardNo: cashPayment ? null : cardNo,
+    cvv: cashPayment ? null : cvv,
+    cashPayment,
+  });
+
+  // Fetch the newly created guest (excluding sensitive fields)
+  const createdGuest = await Guest.findById(guest._id).select(
+    "-password -refreshToken -cvv -cardNo"
+  );
+  if (!createdGuest) {
+    throw new ApiError(500, "Something went wrong while creating the guest.");
+  }
+
+  // Send the response
+  return res
+    .status(201)
+    .json(new ApiResponse(200, createdGuest, "Guest created successfully."));
+});
+
+
 const loginGuest = asyncHandler(async (req, res) => {
   // get data from frontend - email, password
   // validate isEmpty, isRegistered, isPasswordCorrect,
@@ -189,9 +255,30 @@ const getCurrentGuest = asyncHandler(async (req, res) => {
   }
 });
 
+const getGuestById = asyncHandler(async (req, res) => {
+  const { guestId } = req.params;
+
+  if (!guestId) {
+    throw new ApiError(400, "Staff ID is required.");
+  }
+
+  const guest = await Guest.findById(guestId);
+
+  if (!guest) {
+    throw new ApiError(404, "Staff not found.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, guest, "staff fetched successfully"));
+});
+
+
 export {
   registerGuest,
+  registerGuestByStaff,
   getCurrentGuest,
+  getGuestById,
   getGuests,
   loginGuest,
   logoutGuest,

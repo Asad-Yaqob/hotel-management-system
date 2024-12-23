@@ -102,7 +102,10 @@ const updateRoom = asyncHandler(async (req, res) => {
 
   if (
     [roomNo, roomType, capacity, price, amenities, description].some(
-      (field) => field?.trim() === ""
+      (field) =>
+        field === undefined ||
+        field === null ||
+        (typeof field === "string" && field.trim() === "")
     )
   ) {
     throw new ApiError(400, "All fields must be provided");

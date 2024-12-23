@@ -1,4 +1,3 @@
-import { response } from "express";
 import { Cleaning } from "../models/cleaning.model.js";
 import { Room } from "../models/room.model.js";
 import { ApiError } from "../utils/apiError.js";
@@ -41,19 +40,19 @@ const cleaningTasks = asyncHandler(async (_, res) => {
 const scheduleCleaning = asyncHandler(async (req, res) => {
   // get the room no, description, scheduledDate
 
-  const { roomId, description, scheduledDate } = req.body;
+  const { roomId, service, description } = req.body;
 
   if (
-    [roomId, description, scheduledDate].some((field) => field?.trim() === "")
+    [roomId, service, description].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are mandatory.");
   }
 
   const cleaningTask = await Cleaning.create({
     room: roomId,
+    service,
     description,
     reportedBy: req.user._id,
-    scheduledDate,
   });
 
   if (!cleaningTask) {
@@ -66,6 +65,7 @@ const scheduleCleaning = asyncHandler(async (req, res) => {
 });
 
 const updateStatus = asyncHandler(async (req, res) => {
+  
   const { cleaningId } = req.params;
   const { status } = req.body;
 
@@ -100,4 +100,33 @@ const updateStatus = asyncHandler(async (req, res) => {
     );
 });
 
-export { getRoomsStatus, scheduleCleaning, cleaningTasks, updateStatus };
+const getSingleRoomStatus = asyncHandler(async (req, res) => {
+  // get the room id
+  // validate data, null-check.
+  // check if room exists
+  // return room object
+
+  const { roomId } = req.params;
+
+  if (!roomId) {
+    throw new ApiError(400, "Room ID is required");
+  }
+
+  const room = await Room.findById(roomId).select('_id roomNo ');
+
+  if (!room) {
+    throw new ApiError(404, "Room not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { room }, "Room fetched successfully."));
+});
+
+export {
+  getRoomsStatus,
+  scheduleCleaning,
+  cleaningTasks,
+  updateStatus,
+  getSingleRoomStatus,
+};

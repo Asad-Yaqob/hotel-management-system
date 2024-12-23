@@ -1,15 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+
 import axios from "axios";
+import { baseURl } from "../../utils/constants";
 
 const StaffAuthContext = createContext(null);
 
 export const StaffAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [currentStaff, setCurrentStaff] = useState(null);
+  const [allStaff, setAllStaff] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const baseURl = "http://localhost:8000/api/v1";
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -19,7 +22,7 @@ export const StaffAuthProvider = ({ children }) => {
     } else {
       setIsLoading(false);
     }
-  }, []);
+  }, [user, isAuthenticated]);
 
   const checkAuthStatus = async () => {
     try {
@@ -62,7 +65,6 @@ export const StaffAuthProvider = ({ children }) => {
   };
 
   const register = async (formData) => {
-    
     // Check if any field is empty, null, or undefined
     // if (
     //  formData
@@ -89,7 +91,6 @@ export const StaffAuthProvider = ({ children }) => {
       };
     }
   };
-
 
   const logout = async () => {
     try {
@@ -241,17 +242,128 @@ export const StaffAuthProvider = ({ children }) => {
     }
   };
 
+  const getStaff = async () => {
+    if (!accessToken) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.get(`${baseURl}/staff/all-staffs`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (response.status === 200) {
+        //  console.log(response.data.data);
+        setIsLoading(false);
+        setAllStaff(response.data.data);
+
+        return { success: true };
+      }
+
+      setIsLoading(false);
+      return {
+        success: true,
+        message: response.data || "Failed to fetch data",
+      };
+    } catch (error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        message: error.message || "Failed to fetch data",
+      };
+    }
+  };
+
+  const fetchStaffDetails = async (staffId) => {
+
+    if (!accessToken || !staffId) return;
+
+    setIsLoading(true);
+
+    try {
+      // Fetch specific staff details using staffId
+      const response = await axios.get(`${baseURl}/staff/get-staff/${staffId}`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        setIsLoading(false);
+        setCurrentStaff(response.data.data); 
+
+        return { success: true };
+      }
+
+      setIsLoading(false);
+
+      return {
+        success: false,
+        message: response.data || "Failed to fetch data",
+      };
+    } catch (error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        message: error.message || "Failed to fetch data",
+      };
+    }
+  };
+
+
+  const toggleStatus = async (staffId, action) => {
+    if (!(staffId && action)) {
+      return { success: false, message: "staffId and action are required." };
+    }
+
+    try {
+      setIsLoading(true);
+
+      const response = await axios.patch(
+        `${baseURl}/staff/toggleStatus`,
+        { staffId, action },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      console.log(response.data);
+
+      if (response.status < 400) {
+        setIsLoading(false);
+        return { success: true };
+      }
+
+      setIsLoading(false);
+      return { success: false };
+    } catch (error) {
+      setIsLoading(false);
+      return { success: false, message: "Unable to toggle status." };
+    }
+  };
+
   const value = {
     user,
     accessToken,
     isAuthenticated,
     isLoading,
+    allStaff,
+    currentStaff,
+    setIsLoading,
     login,
     logout,
     updateAvatar,
     updateUserProfile,
     updatePassword,
     register,
+    getStaff,
+    setAllStaff,
+    toggleStatus,
+    fetchStaffDetails,
+    setCurrentStaff,
   };
 
   return (
