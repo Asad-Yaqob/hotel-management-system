@@ -158,7 +158,7 @@ const reserveRoomByGuest = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, booking, "Booking added successfully."));
 });
 
-const reserveRoomByStaff = asyncHandler(async (req, res) => {
+const  reserveRoomByStaff = asyncHandler(async (req, res) => {
   const {
     firstName,
     lastName,
@@ -193,7 +193,7 @@ const reserveRoomByStaff = asyncHandler(async (req, res) => {
       checkInDate,
       checkOutDate,
       totalPrice,
-    ].some((field) => field?.trim() === "")
+    ].some((field) => !field || (typeof field === "string" && !field.trim()))
   ) {
     throw new ApiError(400, "All fields are mandatory.");
   }

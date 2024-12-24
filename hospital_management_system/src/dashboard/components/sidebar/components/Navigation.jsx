@@ -15,7 +15,7 @@ const Navigation = () => {
   const { user } = useStaffAuth();
 
   const menuItems = [
-    { name: "Dashboard", icon: <RiDashboard2Fill /> },
+    // { name: "Dashboard", icon: <RiDashboard2Fill /> },
     { name: "Room", icon: <IoBed /> },
     { name: "House Keeping", icon: <MdDryCleaning /> },
     { name: "Maintainence", icon: <IoIosSettings /> },

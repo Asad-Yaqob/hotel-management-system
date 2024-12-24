@@ -6,25 +6,39 @@ import { useStaffAuth } from "./context/auth/StaffAuthContext";
 import Login from "./dashboard/pages/Login";
 import { roles } from "./utils/constants";
 import { Error } from "./dashboard/components/reusable/Error";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function DashboardLayout() {
   const { isAuthenticated, user } = useStaffAuth();
   const navigate = useNavigate();
+  const [isUserInitialized, setIsUserInitialized] = useState(false);
 
   useEffect(() => {
+    // Wait for user to be initialized
     if (isAuthenticated) {
-      // Redirect if user role is invalid
-      if (!roles.includes(user?.role)) {
-        navigate("/");
+      if (user) {
+        if (user.role && roles.includes(user.role)) {
+          if (user.isActive === false) {
+            navigate("/");
+          }
+        } else {
+          navigate("/");
+        }
+        setIsUserInitialized(true); // Mark initialization as complete
       }
-
-      // Redirect if the user is deactivated
-      if (user?.isActive === false) {
-        navigate("/"); 
-      }
+    } else {
+      setIsUserInitialized(true); // Mark initialization complete if not authenticated
     }
-  }, [isAuthenticated, user, navigate]);
+  }, []);
+
+  // Show a loading spinner or message while user is being initialized
+  if (!isUserInitialized) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+  }
 
   // Case 1: If the user is not logged in, show the Login page
   if (!isAuthenticated) {
@@ -32,7 +46,7 @@ function DashboardLayout() {
   }
 
   // Case 2: If the user's role is invalid, show an error page
-  if (!roles.includes(user?.role)) {
+  if (!roles.includes(user.role)) {
     return (
       <Error
         message="Only Staff can access this dashboard. Sorry"

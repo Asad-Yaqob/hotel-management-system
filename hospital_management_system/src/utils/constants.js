@@ -1,4 +1,4 @@
-export const roles = ["manager", "housekeeping", "maintainence", "receptionist"];
+export const roles = ["manager", "housekeeping", "maintainence", "receptionist", "admin"];
 export const baseURl = "http://localhost:8000/api/v1";
 
 export const STATUS_OPTIONS = [

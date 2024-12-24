@@ -13,35 +13,42 @@ export const StaffAuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
       setAccessToken(token);
-      checkAuthStatus();
     } else {
       setIsLoading(false);
     }
-  }, [user, isAuthenticated]);
+  }, []);
+
+  useEffect(() => {
+    if (accessToken) {
+      checkAuthStatus();
+    }
+  }, [accessToken]);
 
   const checkAuthStatus = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get(`${baseURl}/staff/auth-status`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
       });
 
-      if (response?.data?.accessToken) {
+      if (response?.data?.user) {
         setUser(response.data.user);
-        setAccessToken(response.data.accessToken);
         setIsAuthenticated(true);
       }
     } catch (error) {
       console.error("Auth status check failed:", error);
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const login = async (email, password) => {
     try {
@@ -94,7 +101,7 @@ export const StaffAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const response = await axios.patch(
+      await axios.patch(
         `${baseURl}/staff/logout`,
         {},
         {
@@ -103,15 +110,19 @@ export const StaffAuthProvider = ({ children }) => {
         }
       );
 
-      if (response.status === 200) {
-        console.log("Logout successful");
-        localStorage.removeItem("access_token");
-        setUser(null);
-        setAccessToken(null);
-        setIsAuthenticated(false);
-      }
+      // Clear local storage and reset state
+      localStorage.removeItem("access_token");
+      setUser(null);
+      setAccessToken(null);
+      setIsAuthenticated(false);
+
+      return { success: true };
     } catch (error) {
       console.error("Logout failed:", error);
+      return { success: true, message: "Logout failed" };
+    } finally {
+      // Reset isLoading to prevent infinite loading state
+      setIsLoading(false);
     }
   };
 
@@ -276,23 +287,25 @@ export const StaffAuthProvider = ({ children }) => {
   };
 
   const fetchStaffDetails = async (staffId) => {
-
     if (!accessToken || !staffId) return;
 
     setIsLoading(true);
 
     try {
       // Fetch specific staff details using staffId
-      const response = await axios.get(`${baseURl}/staff/get-staff/${staffId}`, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const response = await axios.get(
+        `${baseURl}/staff/get-staff/${staffId}`,
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
 
       console.log(response.data);
 
       if (response.status === 200) {
         setIsLoading(false);
-        setCurrentStaff(response.data.data); 
+        setCurrentStaff(response.data.data);
 
         return { success: true };
       }
@@ -311,7 +324,6 @@ export const StaffAuthProvider = ({ children }) => {
       };
     }
   };
-
 
   const toggleStatus = async (staffId, action) => {
     if (!(staffId && action)) {

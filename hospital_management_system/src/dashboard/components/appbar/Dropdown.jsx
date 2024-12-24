@@ -6,20 +6,22 @@ const Dropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const { logout, user } = useStaffAuth();
+  const { logout, user, accessToken } = useStaffAuth();
     const navigate = useNavigate();
 
   const logoutStaff = async () => {
-    
-   const response = await logout();
+    const response = await logout(accessToken);
 
-   const { success } = response;
+    const { success } = response;
 
-   if (success) {
-     navigate('/admin');
-   }
+    if (success) {
+      // Wait for state to update
+      setTimeout(() => {
+        navigate("/admin");
+      }, 500);
+    }
+  };
 
-  }
     
   // Handle click outside to close the dropdown
   const handleClickOutside = (event) => {
@@ -69,7 +71,7 @@ const Dropdown = () => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-10 overflow-hidden transition-all duration-300 ease-in-out transform opacity-100">
           <Link
-            to={'profile'}
+            to={"profile"}
             className="block px-4 py-3 text-sm text-gray-800 hover:bg-indigo-50 transition duration-300 ease-in-out"
           >
             Profile
