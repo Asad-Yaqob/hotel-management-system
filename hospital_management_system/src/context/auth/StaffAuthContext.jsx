@@ -6,6 +6,7 @@ import { baseURl } from "../../utils/constants";
 const StaffAuthContext = createContext(null);
 
 export const StaffAuthProvider = ({ children }) => {
+  
   const [user, setUser] = useState(null);
   const [currentStaff, setCurrentStaff] = useState(null);
   const [allStaff, setAllStaff] = useState(null);

@@ -5,6 +5,7 @@ import { useMaintainenceContext } from "../../context/MaintainenceContext";
 import { useStaffAuth } from "../../context/auth/StaffAuthContext";
 import { useRoomContext } from "../../context/RoomContext";
 import { toast } from "react-toastify";
+import { convertDateToDDMMYYYY } from "../../utils/dateFormater";
 
 const Maintenance = () => {
   const [showAddMaintainence, setShowAddMaintainence] = useState(false);
@@ -17,6 +18,7 @@ const Maintenance = () => {
     handleUpdateStatus,
     reportMaintainece,
   } = useMaintainenceContext();
+  
   const { accessToken } = useStaffAuth();
   const { roomData, fetchRooms } = useRoomContext();
 
@@ -82,6 +84,13 @@ const Maintenance = () => {
                 const matchedRoom =
                   roomData?.find((room) => room._id === request.room) || {};
 
+                const reportedDate = convertDateToDDMMYYYY(
+                  request.reportedDate
+                );
+                const resolutionDate = request.resolutionDate
+                  ? convertDateToDDMMYYYY(request.resolutionDate)
+                  : "N/A"; 
+
                 return (
                   <div
                     key={request.room}
@@ -96,13 +105,13 @@ const Maintenance = () => {
                         {request.reported_By_Role || "Room Cleaning"}
                       </p>
                       <p className="text-gray-600 mt-2">
-                        ReportedDate: {request.reportedDate|| "Room Cleaning"}
+                        ReportedDate: {reportedDate || "Room Cleaning"}
                       </p>
                       <p className="text-gray-600 mt-2">
                         Issue: {request.description || "None"}
                       </p>
                       <p className="text-gray-600 mt-2">
-                        Resoulution Date: {request.resolutionDate|| "None"}
+                        Resoulution Date: {resolutionDate || "None"}
                       </p>
                       <p
                         className={`mt-4 font-semibold ${

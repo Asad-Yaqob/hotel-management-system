@@ -5,7 +5,6 @@ export function SelectedRoom({
   room,
   checkInDate,
   checkOutDate,
-  onSubmitBooking,
 }) {
   return (
     <div className="mt-8">
@@ -27,7 +26,6 @@ export function SelectedRoom({
             room={room}
             checkInDate={checkInDate}
             checkOutDate={checkOutDate}
-            onSubmit={onSubmitBooking}
           />
         </div>
       </div>

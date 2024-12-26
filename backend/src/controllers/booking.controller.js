@@ -27,18 +27,20 @@ const checkAvailability = asyncHandler(async (req, res) => {
   try {
     // Step 1: Find all conflicting bookings
     const conflictingBookings = await Booking.find({
-      checkInDate: { $lt: checkOutDate },
-      checkOutDate: { $gt: checkInDate },
+      checkInDate: { $lt: checkOutDate }, // Booking starts before the check-out date
+      checkOutDate: { $gt: checkInDate }, // Booking ends after the check-in date
     }).select("room");
 
     // Extract room IDs from conflicting bookings
     const bookedRoomIds = conflictingBookings.map((booking) => booking.room);
 
-    // Step 2: Find rooms that are not in the bookedRoomIds
+    // Step 2: Find available rooms that are not in the bookedRoomIds and are not occupied
     const availableRooms = await Room.find({
       _id: { $nin: bookedRoomIds }, // Exclude booked rooms
+      availability: { $ne: "occupied" }, // Exclude rooms marked as 'occupied'
     });
 
+    // Step 3: Return the response
     return res
       .status(200)
       .json(
@@ -49,9 +51,13 @@ const checkAvailability = asyncHandler(async (req, res) => {
         )
       );
   } catch (error) {
-    throw new ApiError(400, "Could not fetch available rooms. Error: ", error);
+    throw new ApiError(
+      400,
+      `Could not fetch available rooms. Error: ${error.message}`
+    );
   }
 });
+
 
 const reserveRoomByGuest = asyncHandler(async (req, res) => {
   const {
@@ -231,7 +237,7 @@ const  reserveRoomByStaff = asyncHandler(async (req, res) => {
     room: roomId,
     guest: guestId,
     $or: [
-      { checkInDate: { $lt: checkOutDate, $gte: checkInDate } }, // Overlaps with new booking dates
+      { checkInDate: { $lt: checkOutDate, $gte: checkInDate } },
       { checkOutDate: { $gt: checkInDate, $lte: checkOutDate } },
       {
         checkInDate: { $lte: checkInDate },

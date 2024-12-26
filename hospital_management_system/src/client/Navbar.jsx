@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ const Navbar = () => {
     useGuestAuth();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
+
   const toggleRegisterModal = () => {
     setIsModalOpen(!isModalOpen);
     setIsLoginModalOpen(false);
@@ -116,69 +117,91 @@ const Navbar = () => {
       }`}
     >
       <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-700 rounded-b-xl shadow-md">
-        {/* Logo */}
-        <Link to="/" className="text-white">
-          <h1 className="text-2xl font-semibold">LuxuryStay Hospitality</h1>
-        </Link>
-
         {/* Desktop Menu */}
-        <ul className="hidden md:flex items-center gap-4 text-lg text-white">
-          {["Home", "Amenities", "Gallery", "Rooms", "Blog"].map(
-            (item, index) => (
-              <li
-                key={index}
-                className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
-              >
-                {item}{" "}
-                {["Home", "Gallery", "Rooms", "Blog"].includes(item) && (
-                  <MdKeyboardArrowDown className="ml-2 inline" />
-                )}
+        <div className="hidden md:flex">
+          <ul className="flex items-center gap-4 text-lg text-white">
+            <Link to="/">
+              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
+                Home
               </li>
-            )
-          )}
-          {!isAuthenticated ? (
-            <button
-              onClick={toggleRegisterModal}
-              className="border px-5 py-1 rounded-md hover:bg-gray-700"
-            >
-              Register
-            </button>
-          ) : (
-            <button
-              onClick={logout}
-              className="border px-5 py-1 rounded-md hover:bg-gray-700"
-            >
-              Logout
-            </button>
-          )}
-        </ul>
-
-        {/* Mobile Menu Button */}
-        <button onClick={toggleMenu} className="text-white md:hidden">
-          <RiMenu2Fill size={25} />
-        </button>
+            </Link>
+            <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300">
+              Amenities
+            </li>
+            <Link to="/Gallery">
+              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
+                Gallery
+              </li>
+            </Link>
+          </ul>
+        </div>
+        <div className="text-white">
+          <Link to="/">
+            <h1 className="text-2xl font-semibold">LuxuryStay Hospitality</h1>
+          </Link>
+        </div>
+        <div className="hidden md:flex">
+          <ul className="flex items-center gap-4 text-lg text-white">
+            <Link to="/CheckoutRoom">
+              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
+                Rooms
+              </li>
+            </Link>
+            <Link to="/About">
+              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
+                Blog <MdKeyboardArrowDown className="ml-2" />
+              </li>
+            </Link>
+            {!isAuthenticated ? (
+              <button
+                onClick={toggleRegisterModal}
+                className="border px-5 py-1 rounded-md hover:bg-gray-700"
+              >
+                Register
+              </button>
+            ) : (
+              <button
+                onClick={logout}
+                className="border px-5 py-1 rounded-md hover:bg-gray-700"
+              >
+                Logout
+              </button>
+            )}
+          </ul>
+        </div>
+        {/* Mobile Menu Toggle Button */}
+        <div className="text-white md:hidden">
+          <button onClick={() => setMenuOpen(!menuOpen)}>
+            <RiMenu2Fill size={25} />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden bg-black">
           <ul className="flex flex-col items-center text-lg text-white">
-            {[
-              "Home",
-              "Pages",
-              "Amenities",
-              "Gallery",
-              "Rooms",
-              "Blog",
-              "Contact",
-            ].map((item, index) => (
-              <li
-                key={index}
-                className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 text-center"
-              >
-                {item}
-              </li>
-            ))}
+            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+              Home
+            </li>
+            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+              Pages
+            </li>
+            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+              Amenities
+            </li>
+            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+              Gallery
+            </li>
+            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+              Rooms
+            </li>
+            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+              Blog
+            </li>
+            <li className="w-full px-6 py-4 hover:bg-gray-700 transition duration-300 text-center">
+              Contact
+            </li>
             {!isAuthenticated ? (
               <button
                 onClick={toggleRegisterModal}

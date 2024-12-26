@@ -1,154 +1,150 @@
-import React, { useState } from "react";
+import React from "react";
+import { useFormik } from "formik";
+import { useBookingContext } from "../../../context/BookingContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-export function GuestInformationForm({
-  room,
-  checkInDate,
-  checkOutDate,
-  onSubmit,
-}) {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    phone: "",
-    country: "",
-    city: "",
-    address: "",
-    cashPayment: false,
-    cardNo: "",
-    cvv: "",
+export function GuestInformationForm({ room, checkInDate, checkOutDate }) {
+  const { submitBooking } = useBookingContext();
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      phone: "",
+      country: "",
+      city: "",
+      address: "",
+      cashPayment: false,
+      cardNo: "",
+      cvv: "",
+    },
+    onSubmit: async (values) => {
+      const nights = Math.ceil(
+        (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24)
+      );
+      const totalPrice = room.price * nights;
+
+      const response = await submitBooking({
+        ...values,
+        roomId: room._id,
+        checkInDate,
+        checkOutDate,
+        totalPrice,
+      });
+
+      if (response) {
+        formik.resetForm();
+        toast.dismiss();
+        toast.success("room reservered  successfully.");
+        useNavigate("/admin/booking");
+        return;
+      }
+
+      toast.dismiss();
+      toast.error("room reservation  failed.");
+    },
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const nights = Math.ceil(
-      (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24)
-    );
-    const totalPrice = room.price * nights;
-
-    onSubmit({
-      ...formData,
-      roomId: room._id,
-      checkInDate,
-      checkOutDate,
-      totalPrice,
-    });
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+    <form onSubmit={formik.handleSubmit} className="mt-6 space-y-4">
       <h3 className="text-xl font-semibold mb-4">Guest Information</h3>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          First Name
-        </label>
+        <label>First Name</label>
         <input
           type="text"
           name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
+          value={formik.values.firstName}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          lastName
-        </label>
+        <label>Last Name</label>
         <input
           type="text"
           name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
+          value={formik.values.lastName}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-gray-700">email</label>
+        <label>Email</label>
         <input
           type="email"
           name="email"
-          value={formData.email}
-          onChange={handleChange}
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          password
-        </label>
+        <label>Password</label>
         <input
           type="password"
           name="password"
-          value={formData.password}
-          onChange={handleChange}
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Phone</label>
+        <label>Phone</label>
         <input
           type="tel"
           name="phone"
-          value={formData.phone}
-          onChange={handleChange}
+          value={formik.values.phone}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Country
-        </label>
+        <label>Country</label>
         <input
           type="text"
           name="country"
-          value={formData.country}
-          onChange={handleChange}
+          value={formik.values.country}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">City</label>
+        <label>City</label>
         <input
           type="text"
           name="city"
-          value={formData.city}
-          onChange={handleChange}
+          value={formik.values.city}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Address
-        </label>
+        <label>Address</label>
         <input
           type="text"
           name="address"
-          value={formData.address}
-          onChange={handleChange}
+          value={formik.values.address}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
         />
       </div>
 
@@ -157,41 +153,37 @@ export function GuestInformationForm({
           <input
             type="checkbox"
             name="cashPayment"
-            checked={formData.cashPayment}
-            onChange={handleChange}
+            checked={formik.values.cashPayment}
+            onChange={formik.handleChange}
             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
           <span className="ml-2">Pay with cash</span>
         </label>
       </div>
 
-      {!formData.cashPayment && (
+      {!formik.values.cashPayment && (
         <>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Card Number
-            </label>
+            <label>Card Number</label>
             <input
               type="text"
               name="cardNo"
-              value={formData.cardNo}
-              onChange={handleChange}
+              value={formik.values.cardNo}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              CVV
-            </label>
+            <label>CVV</label>
             <input
               type="text"
               name="cvv"
-              value={formData.cvv}
-              onChange={handleChange}
+              value={formik.values.cvv}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
             />
           </div>
         </>

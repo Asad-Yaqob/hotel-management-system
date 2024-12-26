@@ -1,5 +1,6 @@
 import React from 'react';
 import HeroImage from '../assets/img/Hero.jpeg';
+import display from '../assets/img/display.jpeg';
 
 const Categories = () => {
   return (
@@ -22,7 +23,7 @@ const Categories = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
           <div className="overflow-hidden rounded-2xl shadow-lg">
-            <img src={HeroImage} alt="Accommodation" className="w-full h-full object-cover" />
+            <img src={display} alt="Accommodation" className="w-full h-full object-cover" />
           </div>
 
           <div className="flex flex-col space-y-6">

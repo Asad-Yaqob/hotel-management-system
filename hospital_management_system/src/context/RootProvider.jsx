@@ -1,5 +1,6 @@
 import { StaffAuthProvider } from "../context/auth/StaffAuthContext"; //
 import { GuestAuthProvider } from "./auth/GuestAuthContext";
+import { BookingContextProvider } from "./BookingContext";
 import { MaintainenceProvider } from "./MaintainenceContext";
 import { RoomContextProvider } from "./RoomContext";
 
@@ -8,7 +9,9 @@ const RootProvider = ({ children }) => {
     <StaffAuthProvider>
       <GuestAuthProvider>
         <RoomContextProvider>
-          <MaintainenceProvider>{children}</MaintainenceProvider>
+          <MaintainenceProvider>
+            <BookingContextProvider>{children}</BookingContextProvider>
+          </MaintainenceProvider>
         </RoomContextProvider>
       </GuestAuthProvider>
     </StaffAuthProvider>
