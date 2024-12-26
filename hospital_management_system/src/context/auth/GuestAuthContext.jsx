@@ -12,7 +12,6 @@ export const GuestAuthProvider = ({ children }) => {
   const [allGuests, setAllGuests] = useState([]);
   const [currentGuest, setCurrentGuest] = useState(null);
 
-
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
@@ -56,20 +55,25 @@ export const GuestAuthProvider = ({ children }) => {
       // console.log(response.data.data.data.user);
 
       if (response?.data?.data) {
-        // console.log("User: " + response.data.data);
-        setUser(response.data.data.data.user);
+        // console.log(response.data.data);
+        console.log("Entered in success.");
+        setUser(response.data.data.user);
         setIsAuthenticated(true);
         localStorage.setItem(
           "access_token",
-          response.data.data.data.accessToken
+          response.data.data.accessToken
         );
+
         setIsLoading(false);
 
         return { success: true };
       }
 
+      console.log("Entered in false.");
+
       setIsLoading(false);
       return { success: false };
+      
     } catch (error) {
       setIsLoading(false);
       return { success: false, message: error.message || "Unable to login." };
@@ -147,16 +151,23 @@ export const GuestAuthProvider = ({ children }) => {
     cashPayment = false
   ) => {
     // Validation: Check mandatory fields
-   if (
-     [firstName, lastName, email, password, phone, country, city, address].some(
-       (field) => !field || (typeof field === "string" && !field.trim())
-     )
-   ) {
-     return {
-       success: false,
-       message: "All fields except payment details are required.",
-     };
-   }
+    if (
+      [
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        country,
+        city,
+        address,
+      ].some((field) => !field || (typeof field === "string" && !field.trim()))
+    ) {
+      return {
+        success: false,
+        message: "All fields except payment details are required.",
+      };
+    }
 
     // Validation: Payment details if not cash payment
     if (!cashPayment && (!cardNo || !cvv)) {
@@ -170,22 +181,26 @@ export const GuestAuthProvider = ({ children }) => {
       setIsLoading(true);
 
       // API request to register guest by staff
-      const response = await axios.post(`${baseURl}/guest/register-by-staff`, {
-        firstName,
-        lastName,
-        email,
-        password,
-        phone,
-        country,
-        city,
-        address,
-        cardNo: cashPayment ? null : cardNo,
-        cvv: cashPayment ? null : cvv,
-        cashPayment,
-      }, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const response = await axios.post(
+        `${baseURl}/guest/register-by-staff`,
+        {
+          firstName,
+          lastName,
+          email,
+          password,
+          phone,
+          country,
+          city,
+          address,
+          cardNo: cashPayment ? null : cardNo,
+          cvv: cashPayment ? null : cvv,
+          cashPayment,
+        },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
 
       if (response.status < 400) {
         setIsLoading(false);

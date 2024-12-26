@@ -91,7 +91,9 @@ const Navbar = () => {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
+
       const { success } = await login(values.email, values.password);
+      console.log(success);
 
       if (success) {
         setMessage("Login Successful.");
