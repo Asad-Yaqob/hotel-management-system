@@ -15,8 +15,8 @@ import { upload } from "../middlewares/multer.middleware.js";
 const roomRouter = Router();
 
 roomRouter.route("/add").post(verifyJwt, upload.single("image"), addRoom);
-roomRouter.route("/get-rooms").get(verifyJwt, getRooms);
-roomRouter.route("/get-room/:roomId").get(verifyJwt, getSingleRoom);
+roomRouter.route("/get-rooms").get(getRooms);
+roomRouter.route("/get-room/:roomId").get(getSingleRoom);
 roomRouter.route("/update/:roomId").put(verifyJwt, upload.none(), updateRoom);
 roomRouter
 .route("/change-image/:roomId")

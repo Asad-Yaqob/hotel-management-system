@@ -28,6 +28,7 @@ import StaffDetail from "./dashboard/pages/StaffDetail";
 import RoomDetails from "./dashboard/pages/RoomDetail";
 import GuestDetail from "./dashboard/pages/GuestDetail";
 import SchedualCleaning from "./dashboard/components/housekeeping/SchedualCleaning";
+import RoomDetailPage from "./client/page/RoomDetailPage";
 
 // Create a single route structure
 const router = createBrowserRouter([
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "CheckoutRoom", element: <CheckOutRooms /> },
+      { path: "RoomDetail/:roomId", element: <RoomDetailPage /> },
       { path: "Gallery", element: <Gallery /> },
       { path: "About", element: <About /> },
     ],

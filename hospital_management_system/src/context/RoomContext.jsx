@@ -13,20 +13,11 @@ export const RoomContextProvider = ({ children }) => {
   const [roomData, setRoomData] = useState([]);
   const [currentRoom, setCurrentRoom] = useState([]);
 
-
-  const fetchRooms = async (accessToken) => {
-    if (!accessToken) {
-      console.error("Access token is required");
-      return;
-    }
-
+  const fetchRooms = async () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.get(`${baseURl}/room/get-rooms`, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const response = await axios.get(`${baseURl}/room/get-rooms`);
 
       if (response.status === 200) {
         // console.log("Rooms fetched:", response.data.data.rooms);
@@ -41,16 +32,13 @@ export const RoomContextProvider = ({ children }) => {
     }
   };
 
-  const fetchCurrentRoom = async (accessToken, roomId) => {
-    if (!accessToken || !roomId) return;
+  const fetchCurrentRoom = async (roomId) => {
+    if (!roomId) return;
 
     setIsLoading(true);
 
     try {
-      const response = await axios.get(`${baseURl}/room/get-room/${roomId}`, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const response = await axios.get(`${baseURl}/room/get-room/${roomId}`);
 
       //  console.log("Rooms fetched:", response.data.data.room);
 

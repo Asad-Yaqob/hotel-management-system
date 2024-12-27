@@ -1,36 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { RiMenu2Fill } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { IoCloseSharp } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useGuestAuth } from "../context/auth/GuestAuthContext";
+import Modal from "./components/navbar/Modal";
+import RegisterForm from "./components/navbar/RegisterForm";
+import LoginForm from "./components/navbar/LoginForm";
 
 const Navbar = () => {
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [message, setMessage] = useState("");
 
-  const { isAuthenticated, login, register, logout, isLoading } =
-    useGuestAuth();
+  const { isAuthenticated, login, register, logout, isLoading } = useGuestAuth();
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-
-  const toggleRegisterModal = () => {
+  const toggleRegisterModal = useCallback(() => {
     setIsModalOpen(!isModalOpen);
     setIsLoginModalOpen(false);
     setMenuOpen(false);
-  };
+  }, [isModalOpen]);
 
-  const toggleLoginModal = () => {
+  const toggleLoginModal = useCallback(() => {
     setIsLoginModalOpen(!isLoginModalOpen);
     setIsModalOpen(false);
     setMenuOpen(false);
-  };
+  }, [isLoginModalOpen]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const formikRegister = useFormik({
     initialValues: {
@@ -42,31 +52,19 @@ const Navbar = () => {
     validationSchema: Yup.object({
       firstName: Yup.string().required("First Name is required"),
       lastName: Yup.string().required("Last Name is required"),
-      email: Yup.string()
-        .email("Invalid email address")
-        .required("Email is required"),
-      password: Yup.string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required"),
+      email: Yup.string().email("Invalid email address").required("Email is required"),
+      password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
     }),
     onSubmit: async (values) => {
       try {
-        const response = await register(
-          values.firstName,
-          values.lastName,
-          values.email,
-          values.password
-        );
-
+        const response = await register(values.firstName, values.lastName, values.email, values.password);
         if (response.success) {
           setMessage("Registration Successful.");
-
           toast.dismiss();
           toast.success("Registration Successful.");
           toggleLoginModal();
           return;
         }
-
         toast.dismiss();
         toast.error("Registration Failed.");
       } catch (error) {
@@ -83,32 +81,23 @@ const Navbar = () => {
       password: "",
     },
     validationSchema: Yup.object({
-      email: Yup.string()
-        .email("Invalid email address")
-        .required("Email is required"),
-      password: Yup.string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required"),
+      email: Yup.string().email("Invalid email address").required("Email is required"),
+      password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
     }),
     onSubmit: async (values) => {
-
       const { success } = await login(values.email, values.password);
-      console.log(success);
-
       if (success) {
         setMessage("Login Successful.");
-
         toast.dismiss();
         toast.success("Login Successful.");
-        setIsLoginModalOpen(!isLoginModalOpen);
+        setIsLoginModalOpen(false);
         setIsModalOpen(false);
         setMenuOpen(false);
         return;
       }
-
       setMessage("Something went wrong.");
       toast.dismiss();
-      toast.success("Login failed.");
+      toast.error("Login failed.");
     },
   });
 
@@ -119,41 +108,67 @@ const Navbar = () => {
       }`}
     >
       <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-700 rounded-b-xl shadow-md">
-        {/* Desktop Menu */}
         <div className="hidden md:flex">
           <ul className="flex items-center gap-4 text-lg text-white">
-            <Link to="/">
-              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
-                Home
-              </li>
-            </Link>
-            <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive
+                  ? "px-4 py-2 rounded-lg bg-gray-700 transition duration-300 flex items-center"
+                  : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center"
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/Amenities"
+              className={({ isActive }) =>
+                isActive
+                  ? "px-4 py-2 rounded-lg bg-gray-700 transition duration-300"
+                  : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
+              }
+            >
               Amenities
-            </li>
-            <Link to="/Gallery">
-              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
-                Gallery
-              </li>
-            </Link>
+            </NavLink>
+            <NavLink
+              to="/Gallery"
+              className={({ isActive }) =>
+                isActive
+                  ? "px-4 py-2 rounded-lg bg-gray-700 transition duration-300 flex items-center"
+                  : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center"
+              }
+            >
+              Gallery
+            </NavLink>
           </ul>
         </div>
         <div className="text-white">
-          <Link to="/">
+          <NavLink to="/">
             <h1 className="text-2xl font-semibold">LuxuryStay Hospitality</h1>
-          </Link>
+          </NavLink>
         </div>
         <div className="hidden md:flex">
           <ul className="flex items-center gap-4 text-lg text-white">
-            <Link to="/CheckoutRoom">
-              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
-                Rooms
-              </li>
-            </Link>
-            <Link to="/About">
-              <li className="px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center">
-                Blog <MdKeyboardArrowDown className="ml-2" />
-              </li>
-            </Link>
+            <NavLink
+              to="/CheckoutRoom"
+              className={({ isActive }) =>
+                isActive
+                  ? "px-4 py-2 rounded-lg bg-gray-700 transition duration-300 flex items-center"
+                  : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center"
+              }
+            >
+              Rooms
+            </NavLink>
+            <NavLink
+              to="/About"
+              className={({ isActive }) =>
+                isActive
+                  ? "px-4 py-2 rounded-lg bg-gray-700 transition duration-300 flex items-center"
+                  : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center"
+              }
+            >
+              Blog <MdKeyboardArrowDown className="ml-2" />
+            </NavLink>
             {!isAuthenticated ? (
               <button
                 onClick={toggleRegisterModal}
@@ -171,39 +186,85 @@ const Navbar = () => {
             )}
           </ul>
         </div>
-        {/* Mobile Menu Toggle Button */}
         <div className="text-white md:hidden">
           <button onClick={() => setMenuOpen(!menuOpen)}>
             <RiMenu2Fill size={25} />
           </button>
         </div>
       </div>
-
-      {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden bg-black">
           <ul className="flex flex-col items-center text-lg text-white">
-            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Home
-            </li>
-            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+            </NavLink>
+            <NavLink
+              to="/Pages"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Pages
-            </li>
-            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+            </NavLink>
+            <NavLink
+              to="/Amenities"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Amenities
-            </li>
-            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+            </NavLink>
+            <NavLink
+              to="/Gallery"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Gallery
-            </li>
-            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+            </NavLink>
+            <NavLink
+              to="/Rooms"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Rooms
-            </li>
-            <li className="w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center">
+            </NavLink>
+            <NavLink
+              to="/Blog"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Blog
-            </li>
-            <li className="w-full px-6 py-4 hover:bg-gray-700 transition duration-300 text-center">
+            </NavLink>
+            <NavLink
+              to="/Contact"
+              className={({ isActive }) =>
+                isActive
+                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
+                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
+              }
+            >
               Contact
-            </li>
+            </NavLink>
             {!isAuthenticated ? (
               <button
                 onClick={toggleRegisterModal}
@@ -213,7 +274,7 @@ const Navbar = () => {
               </button>
             ) : (
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="border px-5 py-1 rounded-md hover:bg-gray-700 w-full text-center mt-4"
               >
                 Logout
@@ -222,146 +283,26 @@ const Navbar = () => {
           </ul>
         </div>
       )}
-
-      {/* Register Modal */}
+      
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
-            <button onClick={toggleRegisterModal} className="text-2xl">
-              <IoCloseSharp />
-            </button>
-            <h1 className="text-center text-3xl font-semibold">
-              Register Here!
-            </h1>
-            <form onSubmit={formikRegister.handleSubmit} className="p-4">
-              {[
-                { name: "firstName", placeholder: "First Name" },
-                { name: "lastName", placeholder: "Last Name" },
-                { name: "email", placeholder: "Enter Email" },
-                {
-                  name: "password",
-                  placeholder: "Enter Password",
-                  type: "password",
-                },
-              ].map(({ name, placeholder, type = "text" }, index) => (
-                <div key={index} className="mt-4">
-                  <input
-                    type={type}
-                    name={name}
-                    value={formikRegister.values[name]}
-                    onChange={formikRegister.handleChange}
-                    onBlur={formikRegister.handleBlur}
-                    placeholder={placeholder}
-                    className="w-full px-3 py-2 border rounded-md text-sm "
-                  />
-                  {formikRegister.touched[name] &&
-                    formikRegister.errors[name] && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formikRegister.errors[name]}
-                      </p>
-                    )}
-                </div>
-              ))}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full bg-indigo-500 mt-5 text-white py-2 rounded-md font-medium transition ${
-                  isLoading
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-indigo-600"
-                }`}
-              >
-                {isLoading ? "Registering..." : "Register"}
-              </button>
-              {message && (
-                <p className="mt-4 text-sm text-center text-red-600">
-                  {message}
-                </p>
-              )}
-            </form>
-            <div className="flex justify-center p-4 mt-1">
-              <p className="text-gray-500 text-xs">Already have an account?</p>
-              <p
-                onClick={toggleLoginModal}
-                className="text-blue-700 text-xs hover:underline cursor-pointer ml-1"
-              >
-                Log in
-              </p>
-            </div>
-          </div>
-        </div>
+        <Modal onClose={toggleRegisterModal}>
+          <RegisterForm
+            formik={formikRegister}
+            message={message}
+            isLoading={isLoading}
+            toggleLoginModal={toggleLoginModal}
+          />
+        </Modal>
       )}
-
-      {/* Login Modal */}
       {isLoginModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
-            <button onClick={toggleLoginModal} className="text-2xl">
-              <IoCloseSharp />
-            </button>
-            <h1 className="text-center text-3xl font-semibold">Login</h1>
-            <div className="flex items-center my-4 mt-6">
-              <hr className="flex-grow border-t border-gray-300" />
-              <span className="px-3 text-xs text-gray-500">
-                OR LOGIN WITH EMAIL
-              </span>
-              <hr className="flex-grow border-t border-gray-300" />
-            </div>
-            <form className="p-4" onSubmit={formikLogin.handleSubmit}>
-              {[
-                { name: "email", placeholder: "Enter Email", type: "email" },
-                {
-                  name: "password",
-                  placeholder: "Enter Password",
-                  type: "password",
-                },
-              ].map(({ name, placeholder, type }, index) => (
-                <div key={index} className="mt-4">
-                  <input
-                    name={name}
-                    type={type}
-                    value={formikLogin.values[index]}
-                    onChange={formikLogin.handleChange}
-                    placeholder={placeholder}
-                    className="w-full px-3 py-2 border mt-4 rounded-md text-sm"
-                  />
-                  {formikLogin.touched[name] && formikLogin.errors[name] && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formikLogin.errors[name]}
-                    </p>
-                  )}
-                </div>
-              ))}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full bg-indigo-500 mt-5 text-white py-2 rounded-md font-medium transition ${
-                  isLoading
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-indigo-600"
-                }`}
-              >
-                {isLoading ? "Logging..." : "Login "}
-              </button>
-              {message && (
-                <p className="mt-4 text-sm text-center text-red-600">
-                  {message}
-                </p>
-              )}
-            </form>
-            <div className="flex justify-center p-4 mt-1">
-              <p className="text-gray-500 text-xs">
-                Don't have an account yet?
-              </p>
-              <p
-                onClick={toggleRegisterModal}
-                className="text-blue-700 text-xs hover:underline cursor-pointer ml-1"
-              >
-                Sign up
-              </p>
-            </div>
-          </div>
-        </div>
+        <Modal onClose={toggleLoginModal}>
+          <LoginForm
+            formik={formikLogin}
+            message={message}
+            isLoading={isLoading}
+            toggleRegisterModal={toggleRegisterModal}
+          />
+        </Modal>
       )}
     </div>
   );
