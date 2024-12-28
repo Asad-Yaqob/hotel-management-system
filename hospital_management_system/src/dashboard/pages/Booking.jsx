@@ -71,6 +71,7 @@ function App() {
               checkOutDate={checkOutDate}
             />
           )}
+          
         </div>
       </div>
     </div>

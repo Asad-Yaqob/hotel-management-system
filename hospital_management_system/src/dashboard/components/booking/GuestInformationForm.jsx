@@ -1,18 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
 import { useBookingContext } from "../../../context/BookingContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useGuestAuth } from "../../../context/auth/GuestAuthContext";
 
 export function GuestInformationForm({ room, checkInDate, checkOutDate }) {
   const { submitBooking } = useBookingContext();
+  const { user } = useGuestAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log(room.price);
+  }, []);
 
   const formik = useFormik({
     initialValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      password: user?.password || "",
       phone: "",
       country: "",
       city: "",
@@ -22,29 +29,71 @@ export function GuestInformationForm({ room, checkInDate, checkOutDate }) {
       cvv: "",
     },
     onSubmit: async (values) => {
-      const nights = Math.ceil(
-        (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24)
-      );
-      const totalPrice = room.price * nights;
+      const checkIn = new Date(checkInDate);
+      const checkOut = new Date(checkOutDate);
 
-      const response = await submitBooking({
-        ...values,
-        roomId: room._id,
-        checkInDate,
-        checkOutDate,
-        totalPrice,
-      });
-
-      if (response) {
-        formik.resetForm();
-        toast.dismiss();
-        toast.success("room reservered  successfully.");
-        useNavigate("/admin/booking");
+      if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+        toast.error("Invalid check-in or check-out date.");
         return;
       }
 
+      const roomPrice = room.price || 0;
+
+      if (roomPrice <= 0) {
+        toast.error("Invalid room price.");
+        return;
+      }
+
+      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+      if (nights <= 0) {
+        toast.error("Check-out date must be after check-in date.");
+        return;
+      }
+
+      const totalPrice = roomPrice * nights;
+
+      if (isNaN(totalPrice) || totalPrice <= 0) {
+        toast.error("Invalid total price calculation.");
+        return;
+      }
+
+      // console.log("Total Price:", totalPrice);
+
+      const bookingData = {
+        room: room._id,
+        checkInDate,
+        checkOutDate,
+        totalPrice,
+        phone: values.phone,
+        country: values.country,
+        city: values.city,
+        address: values.address,
+        cashPayment: values.cashPayment,
+        cardNo: values.cardNo,
+        cvv: values.cvv,
+      };
+
+      if (user.role !== "guest") {
+        bookingData.firstName = values.firstName;
+        bookingData.lastName = values.lastName;
+        bookingData.email = values.email;
+        bookingData.password = values.password;
+      }
+
+      // console.log(bookingData, user.role);
+
+      const { success, message } = await submitBooking(bookingData, user?.role);
+
+      if (!success) {
+        toast.dismiss();
+        toast.error(message || "Room reservation failed.");
+        return;
+      }
+
+      formik.resetForm();
       toast.dismiss();
-      toast.error("room reservation  failed.");
+      toast.success(message || "Room reserved successfully.");
+      navigate(user?.role !== "guest" ? "/admin/booking" : "/CheckoutRoom");
     },
   });
 
@@ -88,17 +137,19 @@ export function GuestInformationForm({ room, checkInDate, checkOutDate }) {
         />
       </div>
 
-      <div>
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </div>
+      {user.role !== "guest" && (
+        <div>
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+      )}
 
       <div>
         <label>Phone</label>

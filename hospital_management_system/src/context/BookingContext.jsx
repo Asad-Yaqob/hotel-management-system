@@ -35,7 +35,7 @@ export const BookingContextProvider = ({ children }) => {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (checkInDate, checkOutDate) => {
     const validationError = validateDates(checkInDate, checkOutDate);
 
     if (validationError) {
@@ -46,9 +46,10 @@ export const BookingContextProvider = ({ children }) => {
     setError(null);
 
     try {
-      await checkRoomAvailability(checkInDate, checkOutDate);
+      const data = await checkRoomAvailability(checkInDate, checkOutDate);
       setAvailableRooms(data.rooms);
       setSelectedRoom(null);
+      console.log(data);
     } catch (err) {
       setError("Failed to fetch available rooms. Please try again.");
     }
@@ -71,36 +72,40 @@ export const BookingContextProvider = ({ children }) => {
           },
         }
       );
-      setAvailableRooms(response.data.data.rooms);
       setError(null);
+      return response.data.data;
     } catch (error) {
       console.error("Error fetching available rooms:", error);
       setError("Failed to fetch available rooms. Please try again.");
+      throw error;
     }
   };
 
-  async function submitBooking(bookingData) {
-    const response = await axios.post(
-      `${baseURl}/booking/reserve-by-staff`,
-      bookingData,
-      {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      }
-    );
+  const submitBooking = async (bookingData, userRole) => {
+    const url = `${baseURl}/booking/${
+      userRole === "guest" ? "reserve" : "reserve-by-staff"
+    }`;
 
-    if (!response.ok) {
-      throw new Error("Failed to submit booking");
+    // console.log(url);
+
+    const response = await axios.post(`${url}`, bookingData, {
+      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
+
+    if (response.status > 400) {
+      return { success: false, message: "Room reserved failed." };
     }
 
     setCheckInDate("");
     setCheckOutDate("");
     setAvailableRooms([]);
     setSelectedRoom(null);
-    return response.json();
-  }
+
+    return { success: true, message: "Room reserved sucessfully." };
+  };
 
   const values = {
     error,

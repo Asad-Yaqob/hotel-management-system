@@ -121,16 +121,6 @@ const Navbar = () => {
               Home
             </NavLink>
             <NavLink
-              to="/Amenities"
-              className={({ isActive }) =>
-                isActive
-                  ? "px-4 py-2 rounded-lg bg-gray-700 transition duration-300"
-                  : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
-              }
-            >
-              Amenities
-            </NavLink>
-            <NavLink
               to="/Gallery"
               className={({ isActive }) =>
                 isActive
@@ -157,7 +147,7 @@ const Navbar = () => {
                   : "px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center"
               }
             >
-              Rooms
+              Reserve Room
             </NavLink>
             <NavLink
               to="/About"
@@ -216,16 +206,6 @@ const Navbar = () => {
               Pages
             </NavLink>
             <NavLink
-              to="/Amenities"
-              className={({ isActive }) =>
-                isActive
-                  ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
-                  : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
-              }
-            >
-              Amenities
-            </NavLink>
-            <NavLink
               to="/Gallery"
               className={({ isActive }) =>
                 isActive
@@ -236,14 +216,14 @@ const Navbar = () => {
               Gallery
             </NavLink>
             <NavLink
-              to="/Rooms"
+              to="/CheckoutRoom"
               className={({ isActive }) =>
                 isActive
                   ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
                   : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
               }
             >
-              Rooms
+              Reserve Room
             </NavLink>
             <NavLink
               to="/Blog"
@@ -283,7 +263,7 @@ const Navbar = () => {
           </ul>
         </div>
       )}
-      
+
       {isModalOpen && (
         <Modal onClose={toggleRegisterModal}>
           <RegisterForm

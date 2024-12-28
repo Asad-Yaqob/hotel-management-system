@@ -61,7 +61,7 @@ const checkAvailability = asyncHandler(async (req, res) => {
 
 const reserveRoomByGuest = asyncHandler(async (req, res) => {
   const {
-    roomId,
+    room,
     checkInDate,
     checkOutDate,
     totalPrice,
@@ -78,7 +78,7 @@ const reserveRoomByGuest = asyncHandler(async (req, res) => {
   // Step 1: Mandatory fields check
   if (
     [
-      roomId,
+      room,
       checkInDate,
       checkOutDate,
       totalPrice,
@@ -87,7 +87,12 @@ const reserveRoomByGuest = asyncHandler(async (req, res) => {
       country,
       city,
       address,
-    ].some((field) => field?.trim() === "")
+    ].some(
+      (field) =>
+        field === undefined ||
+        field === null ||
+        (typeof field === "string" && field.trim() === "")
+    )
   ) {
     throw new ApiError(400, "All fields are mandatory.");
   }
@@ -106,7 +111,7 @@ const reserveRoomByGuest = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   const existedBooking = await Booking.findOne({
-    room: roomId,
+    room: room,
     guest: userId,
     $or: [
       { checkInDate: { $lt: checkOutDate, $gte: checkInDate } }, // Overlaps with new booking dates
@@ -148,7 +153,7 @@ const reserveRoomByGuest = asyncHandler(async (req, res) => {
   // Step 4: Create the booking
   const booking = await Booking.create({
     guest: userId,
-    room: roomId,
+    room: room,
     checkInDate,
     checkOutDate,
     totalPrice,
@@ -156,12 +161,12 @@ const reserveRoomByGuest = asyncHandler(async (req, res) => {
   });
 
   // Update the room status to "occupied"
-  await Room.findByIdAndUpdate(roomId, { availability: "occupied" });
+  await Room.findByIdAndUpdate(room, { availability: "occupied" });
 
   // Step 5: Return response
   return res
-    .status(200)
-    .json(new ApiResponse(200, booking, "Booking added successfully."));
+    .status(201)
+    .json(new ApiResponse(201, booking, "Booking added successfully."));
 });
 
 const  reserveRoomByStaff = asyncHandler(async (req, res) => {
@@ -174,7 +179,7 @@ const  reserveRoomByStaff = asyncHandler(async (req, res) => {
     country,
     city,
     address,
-    roomId,
+    room,
     checkInDate,
     checkOutDate,
     totalPrice,
@@ -195,11 +200,16 @@ const  reserveRoomByStaff = asyncHandler(async (req, res) => {
       country,
       city,
       address,
-      roomId,
+      room,
       checkInDate,
       checkOutDate,
       totalPrice,
-    ].some((field) => !field || (typeof field === "string" && !field.trim()))
+    ].some(
+      (field) =>
+        field === undefined ||
+        field === null ||
+        (typeof field === "string" && field.trim() === "")
+    )
   ) {
     throw new ApiError(400, "All fields are mandatory.");
   }
@@ -234,7 +244,7 @@ const  reserveRoomByStaff = asyncHandler(async (req, res) => {
   const guestId = guest._id;
 
   const existedBooking = await Booking.findOne({
-    room: roomId,
+    room: room,
     guest: guestId,
     $or: [
       { checkInDate: { $lt: checkOutDate, $gte: checkInDate } },
@@ -254,7 +264,7 @@ const  reserveRoomByStaff = asyncHandler(async (req, res) => {
   // Step 4: Create the booking
   const booking = await Booking.create({
     guest: guestId,
-    room: roomId,
+    room: room,
     checkInDate,
     checkOutDate,
     totalPrice,
@@ -262,7 +272,7 @@ const  reserveRoomByStaff = asyncHandler(async (req, res) => {
   });
 
   // Update the room status to "occupied"
-  await Room.findByIdAndUpdate(roomId, { availability: "occupied" });
+  await Room.findByIdAndUpdate(room, { availability: "occupied" });
 
   // Step 5: Return response
   return res
