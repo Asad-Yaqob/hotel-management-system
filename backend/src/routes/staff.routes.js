@@ -20,9 +20,9 @@ const staffRouter = Router();
 staffRouter.route("/register").post(upload.single("avatar"), registerStaff);
 staffRouter.route("/login").post(loginStaff);
 staffRouter.route("/refresh-token").post(refreshAccessToken);
+staffRouter.route("/auth-status").get(isAuthenticated);
 
 // secured routes
-staffRouter.route("/auth-status").get(verifyJwt,isAuthenticated);
 staffRouter.route("/get-staff/:staffId").get(verifyJwt, getStaffById);
 staffRouter.route("/all-staffs").get(verifyJwt, getAllStaff);
 staffRouter.route("/logout").patch(verifyJwt, logoutStaff);

@@ -1,17 +1,25 @@
 import React, { useEffect } from "react";
 import { useFormik } from "formik";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import { Mail, Lock } from "lucide-react";
 import { Input } from "../components/auth/Input";
 import { Button } from "../components/auth/Button";
 import { LoginHeader } from "../components/auth/LoginHeader";
-import {  useStaffAuth } from "../../context/auth/StaffAuthContext";
+import { useStaffAuth } from "../../context/auth/StaffAuthContext";
 
 function Login() {
-
   const { login, isAuthenticated } = useStaffAuth();
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log(isAuthenticated);
+
+    if (isAuthenticated) {
+      navigate("/admin");
+    }
+  }, []);
 
   const formik = useFormik({
     initialValues: {
@@ -28,24 +36,23 @@ function Login() {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
-      console.log("Form Submitted")
+      console.log("Form Submitted");
       try {
-        const response =  await login(values.email, values.password);
+        const response = await login(values.email, values.password);
         // console.log(response);
         const { success } = response;
         if (success) {
-          navigate('/admin')
+          navigate("/admin");
         }
       } catch (error) {
-        console.log("Something went wronge :" , error)    
+        console.log("Something went wronge :", error);
       }
-    
     },
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 to-gray-900 px-4">
-      <div className="max-w-md w-full bg-white/10 p-6 rounded-lg shadow-lg">
+    <div className="flex items-center justify-center bg-gradient-to-br  h-screen from-purple-800 to-gray-900 px-4">
+      <div className="max-w-md w-full  bg-white/10 p-6 rounded-lg shadow-lg">
         <LoginHeader />
         <form
           className="space-y-6 mt-6"

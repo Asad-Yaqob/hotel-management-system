@@ -18,10 +18,10 @@ const guestRouter = Router();
 guestRouter.route("/register").post(upload.none(), registerGuest);
 guestRouter.route("/login").post(upload.none(), loginGuest);
 guestRouter.route("/refresh-token").post(refreshAccessToken);
+guestRouter.route("/auth-status").get(isAuthenticated);
 
 // secured routes
-guestRouter.route("/register-by-staff").post( verifyJwt ,upload.none(), registerGuestByStaff);
-guestRouter.route("/auth-status").get(verifyJwt,isAuthenticated);
+guestRouter.route("/register-by-staff").post(verifyJwt ,upload.none(), registerGuestByStaff);
 guestRouter.route("/get-guest").get(verifyJwt,getCurrentGuest);
 guestRouter.route("/get-guest/:guestId").get(verifyJwt, getGuestById);
 guestRouter.route("/logout").patch(verifyJwt, logoutGuest);

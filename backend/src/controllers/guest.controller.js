@@ -146,7 +146,7 @@ const registerGuestByStaff = asyncHandler(async (req, res) => {
     firstName,
     lastName,
     email,
-    password, 
+    password,
     phone,
     country,
     address,
@@ -168,7 +168,6 @@ const registerGuestByStaff = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, createdGuest, "Guest created successfully."));
 });
-
 
 const loginGuest = asyncHandler(async (req, res) => {
   // get data from frontend - email, password
@@ -239,7 +238,10 @@ const isAuthenticated = (req, res) => {
   try {
     const accessToken = req.cookies.accessToken;
 
-    return res.json({ success: true, user: req.user,  accessToken });
+    if (!accessToken) return res.status(401).json({ authenticated: false });
+
+    return res.json({ authenticated: true, accessToken });
+    
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
@@ -272,7 +274,6 @@ const getGuestById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, guest, "staff fetched successfully"));
 });
-
 
 export {
   registerGuest,

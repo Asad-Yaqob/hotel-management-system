@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 import axios from "axios";
 import { baseURl } from "../../utils/constants";
@@ -6,50 +6,31 @@ import { baseURl } from "../../utils/constants";
 const StaffAuthContext = createContext(null);
 
 export const StaffAuthProvider = ({ children }) => {
-  
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
   const [currentStaff, setCurrentStaff] = useState(null);
   const [allStaff, setAllStaff] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      setAccessToken(token);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (accessToken) {
-      checkAuthStatus();
-    }
-  }, [accessToken]);
-
   const checkAuthStatus = async () => {
-    setIsLoading(true);
     try {
       const response = await axios.get(`${baseURl}/staff/auth-status`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
       });
 
-      if (response?.data?.user) {
-        setUser(response.data.user);
+      // console.log(response.data);
+
+      if (response.data.authenticated) {
+        setAccessToken(response.data.accessToken);
         setIsAuthenticated(true);
       }
     } catch (error) {
       console.error("Auth status check failed:", error);
-      setUser(null);
+      setAccessToken(null);
       setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
     }
   };
-
 
   const login = async (email, password) => {
     try {
@@ -59,15 +40,19 @@ export const StaffAuthProvider = ({ children }) => {
         { withCredentials: true }
       );
 
-      if (response?.data?.data) {
-        setUser(response.data.data);
+      console.log(response.data.data.data);
+
+      if (response.data.data) {
+        setUser(response.data.data.data);
         setIsAuthenticated(true);
-        localStorage.setItem("access_token", response.data.data.accessToken);
+        // setAccessToken(response.data.data.accessToken);
         return { success: true };
       }
 
       return { success: false };
     } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
       throw new Error("Login failed");
     }
   };
@@ -111,8 +96,7 @@ export const StaffAuthProvider = ({ children }) => {
         }
       );
 
-      // Clear local storage and reset state
-      localStorage.removeItem("access_token");
+     
       setUser(null);
       setAccessToken(null);
       setIsAuthenticated(false);
@@ -366,6 +350,7 @@ export const StaffAuthProvider = ({ children }) => {
     allStaff,
     currentStaff,
     setIsLoading,
+    checkAuthStatus,
     login,
     logout,
     updateAvatar,

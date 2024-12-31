@@ -5,40 +5,31 @@ import axios from "axios";
 const GuestAuthContext = createContext(null);
 
 export const GuestAuthProvider = ({ children }) => {
+  
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [allGuests, setAllGuests] = useState([]);
   const [currentGuest, setCurrentGuest] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      setAccessToken(token);
-      checkAuthStatus();
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
+  
   const checkAuthStatus = async () => {
     try {
       const response = await axios.get(`${baseURl}/guest/auth-status`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
         withCredentials: true,
       });
 
-      if (response?.data?.accessToken) {
-        setUser(response.data.user);
+      // console.log(response.data);
+
+      if (response.data.authenticated) {
         setAccessToken(response.data.accessToken);
         setIsAuthenticated(true);
       }
+
     } catch (error) {
       console.error("Auth status check failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   const login = async (email, password) => {
@@ -59,11 +50,7 @@ export const GuestAuthProvider = ({ children }) => {
         console.log("Entered in success.");
         setUser(response.data.data.user);
         setIsAuthenticated(true);
-        localStorage.setItem(
-          "access_token",
-          response.data.data.accessToken
-        );
-
+       
         setIsLoading(false);
 
         return { success: true };
@@ -73,7 +60,6 @@ export const GuestAuthProvider = ({ children }) => {
 
       setIsLoading(false);
       return { success: false };
-      
     } catch (error) {
       setIsLoading(false);
       return { success: false, message: error.message || "Unable to login." };
@@ -127,7 +113,6 @@ export const GuestAuthProvider = ({ children }) => {
 
       if (response.status === 200) {
         console.log("Logout successful");
-        localStorage.removeItem("access_token");
         setUser(null);
         setAccessToken(null);
         setIsAuthenticated(false);
@@ -304,6 +289,7 @@ export const GuestAuthProvider = ({ children }) => {
     fetchGuests,
     fetchGuestDetails,
     setCurrentGuest,
+    checkAuthStatus,
   };
 
   return (

@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ToastContainer, Bounce } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import CSS for react-toastify
+import "react-toastify/dist/ReactToastify.css";
 import RootProvider from "./context/RootProvider";
 import "./index.css";
 
@@ -29,12 +29,21 @@ import RoomDetails from "./dashboard/pages/RoomDetail";
 import GuestDetail from "./dashboard/pages/GuestDetail";
 import SchedualCleaning from "./dashboard/components/housekeeping/SchedualCleaning";
 import RoomDetailPage from "./client/page/RoomDetailPage";
+import ProtectedRoute from "./ProtectedRoute";
+import AdminProtectedRoute from "./AdminProtectedRoute";
+import LoginForm from "./client/components/navbar/LoginForm";
+import RegisterForm from "./client/components/navbar/RegisterForm";
+import Login from "./dashboard/pages/Login";
 
 // Create a single route structure
 const router = createBrowserRouter([
   {
     path: "/admin",
-    element: <DashboardLayout />,
+    element: (
+      <AdminProtectedRoute>
+        <DashboardLayout />
+      </AdminProtectedRoute>
+    ),
     children: [
       { index: true, element: <Dashboard /> },
       { path: "staff", element: <Staff /> },
@@ -51,12 +60,22 @@ const router = createBrowserRouter([
       { path: "profile", element: <ProfilePage /> },
     ],
   },
+  { path: "/admin/login", element: <Login /> },
   {
     path: "/",
     element: <ClientLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "CheckoutRoom", element: <CheckOutRooms /> },
+      { path: "/login", element: <LoginForm /> },
+      { path: "/register", element: <RegisterForm /> },
+      {
+        path: "CheckoutRoom",
+        element: (
+          <ProtectedRoute>
+            <CheckOutRooms />
+          </ProtectedRoute>
+        ),
+      },
       { path: "RoomDetail/:roomId", element: <RoomDetailPage /> },
       { path: "Gallery", element: <Gallery /> },
       { path: "About", element: <About /> },

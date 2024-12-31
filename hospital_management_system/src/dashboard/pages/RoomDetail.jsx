@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 
 const RoomDetails = () => {
   const { roomId } = useParams();
+
   const {
     isLoading,
     fetchCurrentRoom,
@@ -28,6 +29,7 @@ const RoomDetails = () => {
       await fetchCurrentRoom(accessToken, roomId);
     };
 
+    // console.log('Token: ' + accessToken);
     loadRoomData();
   }, []);
 

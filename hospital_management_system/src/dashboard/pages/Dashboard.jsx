@@ -1,6 +1,33 @@
 import React from "react";
+import { roles } from "../../utils/constants";
+import { Error } from "../components/reusable/Error";
+import { useStaffAuth } from "../../context/auth/StaffAuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+
+  const { user } = useStaffAuth();
+
+  // Case 2: If the user's role is invalid, show an error page
+  if (!roles.includes(user?.role)) {
+    return (
+      <Error
+        message="Only Staff can access this dashboard. Sorry"
+        onRetry={() => useNavigate("/")}
+      />
+    );
+  }
+
+  // Case 3: If the user is deactivated, show a deactivation message
+  if (user?.isActive === false) {
+    return (
+      <Error
+        message="Your account is deactivated. Please contact the administrator."
+        onRetry={() => useNavigate("/")}
+      />
+    );
+  }
+
   return (
     <div className="dashboard bg-gray-100 min-h-screen p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
