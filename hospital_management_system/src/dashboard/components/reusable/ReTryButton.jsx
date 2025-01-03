@@ -1,6 +1,6 @@
 import React from "react";
 
-export function RetryButton({ onClick }) {
+export function ReTryButton({ onClick }) {
   return (
     <button
       onClick={onClick}
