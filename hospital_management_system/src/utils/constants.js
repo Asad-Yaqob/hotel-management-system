@@ -1,5 +1,5 @@
 export const roles = ["manager", "housekeeping", "maintainence", "receptionist", "admin"];
-export const baseURl = "http://localhost:8000/api/v1";
+export const baseURl = "https://luxurystay-hospitality-backend.onrender.com/api/v1";
 
 export const STATUS_OPTIONS = [
   "clean",
