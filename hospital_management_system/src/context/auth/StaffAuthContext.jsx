@@ -2,7 +2,6 @@ import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   useMemo,
 } from "react";
@@ -44,9 +43,6 @@ export const StaffAuthProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
 
   const login = useCallback(async (email, password) => {
     setIsLoading(true);

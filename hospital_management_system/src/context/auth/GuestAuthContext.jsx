@@ -2,7 +2,6 @@ import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   useMemo,
 } from "react";
@@ -31,7 +30,7 @@ export const GuestAuthProvider = ({ children }) => {
 
       if (response.data.authenticated) {
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(response.data.data.user));
+        localStorage.setItem("user", JSON.stringify(response.data.user));
       } else {
         localStorage.removeItem("user");
       }
@@ -41,9 +40,7 @@ export const GuestAuthProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+ 
 
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
@@ -56,10 +53,12 @@ export const GuestAuthProvider = ({ children }) => {
         }
       );
 
-      if (response?.data?.data) {
-        setUser(response.data.data.user);
+      console.log(response.data.data.data)
+
+      if (response.data.data) {
+        setUser(response.data.data.data);
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(response.data.data.user));
+        localStorage.setItem("user", JSON.stringify(response.data.data.data));
         localStorage.setItem("accessToken", response.data.data.accessToken);
         setIsLoading(false);
 
