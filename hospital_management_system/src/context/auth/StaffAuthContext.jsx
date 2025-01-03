@@ -11,9 +11,13 @@ import { baseURl } from "../../utils/constants";
 const StaffAuthContext = createContext(null);
 
 export const StaffAuthProvider = ({ children }) => {
-  const [user, setUser] = useState(
-    () => JSON.parse(localStorage.getItem("user")) || {}
-  );
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || {};
+    } catch {
+      return {};
+    }
+  });
   const [accessToken, setAccessToken] = useState(
     () => localStorage.getItem("accessToken") || null
   );
