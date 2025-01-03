@@ -1,5 +1,5 @@
 import React from 'react';
-import HeroImage from "../../public/img/background.jpeg";
+import HeroImage from "/img/background.jpeg";
 
 const Blog = () => {
   return (

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import HeroImage from "../../../public/img/bg.jpeg";
+import HeroImage from "/img/bg.jpeg";
 import { FaArrowRight } from "react-icons/fa6";
 import { FaWhatsapp  , FaFacebook , FaTwitter , FaInstagram} from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";

@@ -1,7 +1,7 @@
 import React from "react";
-import HeroImage from "../../public/img/parking.jpeg";
-import Gym from "../../public/img/gym.jpeg";
-import PlayGround from "../../public/img/pground.jpeg";
+import HeroImage from "/img/parking.jpeg";
+import Gym from "/img/gym.jpeg";
+import PlayGround from "/img/pground.jpeg";
 
 const Experience = () => {
   return (
