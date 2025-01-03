@@ -58,7 +58,7 @@ export const GuestAuthProvider = ({ children }) => {
       if (response.data.data) {
         setUser(response.data.data.data);
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(response.data.data.user));
+        localStorage.setItem("user", JSON.stringify(response.data.data));
         localStorage.setItem("accessToken", response.data.data.accessToken);
         setIsLoading(false);
 
