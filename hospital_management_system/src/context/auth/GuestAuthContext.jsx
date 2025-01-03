@@ -14,7 +14,7 @@ export const GuestAuthProvider = ({ children }) => {
  const [user, setUser] = useState(() => {
    try {
      const storedUser = localStorage.getItem("user");
-     return storedUser ? JSON.parse(storedUser) : null; // Default to null if no user is stored
+     return storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null; // Default to null if no user is stored
    } catch (error) {
      console.error("Error parsing user data:", error);
      return null; // Default to null in case of error
