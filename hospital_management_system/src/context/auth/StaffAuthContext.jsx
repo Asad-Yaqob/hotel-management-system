@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState } from "react";
-
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import axios from "axios";
 import { baseURl } from "../../utils/constants";
 
@@ -12,21 +18,18 @@ export const StaffAuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(
     () => localStorage.getItem("accessToken") || null
   );
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    return !!user;
-  });
-
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => !!localStorage.getItem("user")
+  );
   const [currentStaff, setCurrentStaff] = useState(null);
   const [allStaff, setAllStaff] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${baseURl}/staff/auth-status`, {
         withCredentials: true,
       });
-
       if (response.data.authenticated) {
         setIsAuthenticated(true);
         localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -39,79 +42,59 @@ export const StaffAuthProvider = ({ children }) => {
       localStorage.removeItem("user");
       console.error("Auth status check failed:", error);
     }
-  };
+  }, []);
 
-  const login = async (email, password) => {
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  const login = useCallback(async (email, password) => {
+    setIsLoading(true);
     try {
       const response = await axios.post(
         `${baseURl}/staff/login`,
         { email, password },
         { withCredentials: true }
       );
-
-      const accessToken = response.data.data.accessToken;
-      const userData = response.data.data.data;
-
-      // console.log(response.data.data);
-
-      if (response.data.data) {
-        setUser(userData);
-        setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("accessToken", accessToken);
-        setIsLoading(false);
-
-        return { success: true };
-      }
-
-      setIsLoading(false);
-      setIsAuthenticated(false);
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
+      const { accessToken, data: userData } = response.data.data;
+      setUser(userData);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("accessToken", accessToken);
+      setAccessToken(accessToken);
+      return { success: true };
     } catch (error) {
-      setIsLoading(false);
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
+      console.error("Login failed:", error);
       return { success: false, message: error.message || "Unable to login." };
-    }
-  };
-
-  const register = async (formData) => {
-    // Check if any field is empty, null, or undefined
-    // if (
-    //  formData
-    // ) {
-    //   return { success: false, error: "All fields are mandatory." };
-    // }
-
-    try {
-      setIsLoading(true);
-
-      const response = await axios.post(`${baseURl}/staff/register`, formData);
-
-      if (response.status < 400) {
-        setIsLoading(false);
-        return { success: true };
-      }
-
-      return { success: false, error: "Failed to register" };
-    } catch (error) {
+    } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const register = useCallback(async (formData) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${baseURl}/staff/register`, formData);
+      return response.status < 400
+        ? { success: true }
+        : { success: false, error: "Failed to register" };
+    } catch (error) {
+      console.error("Registration failed:", error);
       return {
         success: false,
         error: error.message || "Unable to register staff.",
       };
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const logout = async (accessToken) => {
-    // Clear state and localStorage immediately
+  const logout = useCallback(async () => {
     setUser({});
     setAccessToken(null);
     setIsAuthenticated(false);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
-
     try {
       const response = await axios.patch(
         `${baseURl}/staff/logout`,
@@ -121,268 +104,238 @@ export const StaffAuthProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      console.log(response);
-      if (response.status === 200) {
-        return { success: true };
-      }
+      return response.status === 200
+        ? { success: true }
+        : { success: false, message: "Logout failed" };
     } catch (error) {
       console.error("Logout failed:", error);
-      return { success: true, message: "Logout failed" };
+      return { success: false, message: "Logout failed" };
     }
-  };
+  }, [accessToken]);
 
-  const updateAvatar = async (image) => {
-    if (!image) return;
-
-    const formData = new FormData();
-    formData.append("avatar", image);
-
-    try {
+  const updateAvatar = useCallback(
+    async (image) => {
+      if (!image) return;
+      const formData = new FormData();
+      formData.append("avatar", image);
       setIsLoading(true);
-
-      const response = await axios.patch(
-        `${baseURl}/staff/change-avatar`,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (response.status < 400) {
-        console.log("Avatar changed successfully:", response.data);
+      try {
+        const response = await axios.patch(
+          `${baseURl}/staff/change-avatar`,
+          formData,
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        return response.status < 400
+          ? { success: true }
+          : { success: false, error: "Failed to update avatar" };
+      } catch (error) {
+        console.error("Avatar update failed:", error);
+        return {
+          success: false,
+          error: error.message || "Unable to update avatar.",
+        };
+      } finally {
         setIsLoading(false);
-        return { success: true };
       }
+    },
+    [accessToken]
+  );
 
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-
-      return {
-        success: false,
-        error: error.message || "Unable to update avatar.",
-      };
-    }
-  };
-
-  const updateUserProfile = async (
-    staffName,
-    email,
-    phoneNo,
-    streetAddress,
-    country,
-    city
-  ) => {
-    if (
-      [staffName, email, phoneNo, streetAddress, country, city].includes(
-        (field) => field?.trim() === ""
+  const updateUserProfile = useCallback(
+    async (staffName, email, phoneNo, streetAddress, country, city) => {
+      if (
+        [staffName, email, phoneNo, streetAddress, country, city].some(
+          (field) => !field?.trim()
+        )
       )
-    )
-      return;
-
-    try {
+        return;
       setIsLoading(true);
-
-      const response = await axios.put(
-        `${baseURl}/staff/change-details`,
-        {
-          staffName,
-          email,
-          phoneNo,
-          streetAddress,
-          country,
-          city,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (response.status < 400) {
+      try {
+        const response = await axios.put(
+          `${baseURl}/staff/change-details`,
+          { staffName, email, phoneNo, streetAddress, country, city },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        return response.status < 400
+          ? { success: true }
+          : { success: false, error: "Failed to update profile" };
+      } catch (error) {
+        console.error("Profile update failed:", error);
+        return {
+          success: false,
+          error: error.message || "Unable to update profile.",
+        };
+      } finally {
         setIsLoading(false);
-
-        return { success: true };
       }
+    },
+    [accessToken]
+  );
 
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      return {
-        success: false,
-        error: error.message || "Unable to update use information",
-      };
-    }
-  };
-
-  const updatePassword = async (oldPassword, newPassword) => {
-    if (!(oldPassword && newPassword)) return;
-
-    try {
+  const updatePassword = useCallback(
+    async (oldPassword, newPassword) => {
+      if (!(oldPassword && newPassword)) return;
       setIsLoading(true);
-
-      const response = await axios.patch(
-        `${baseURl}/staff/change-password`,
-        {
-          oldPassword,
-          newPassword,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (response.status < 400) {
+      try {
+        const response = await axios.patch(
+          `${baseURl}/staff/change-password`,
+          { oldPassword, newPassword },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        return response.status < 400
+          ? { success: true }
+          : { success: false, error: "Failed to update password" };
+      } catch (error) {
+        console.error("Password update failed:", error);
+        return {
+          success: false,
+          error: error.message || "Unable to update password.",
+        };
+      } finally {
         setIsLoading(false);
-        return { success: true };
       }
+    },
+    [accessToken]
+  );
 
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      return {
-        success: false,
-        error: error.message || "Unable to update use information",
-      };
-    }
-  };
-
-  const getStaff = async () => {
+  const getStaff = useCallback(async () => {
     if (!accessToken) return;
-
     setIsLoading(true);
-
     try {
       const response = await axios.get(`${baseURl}/staff/all-staffs`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      if (response.status === 200) {
-        //  console.log(response.data.data);
-        setIsLoading(false);
-        setAllStaff(response.data.data);
-
-        return { success: true };
-      }
-
-      setIsLoading(false);
-      return {
-        success: true,
-        message: response.data || "Failed to fetch data",
-      };
+      setAllStaff(response.data.data);
+      return response.status === 200
+        ? { success: true }
+        : { success: false, message: "Failed to fetch data" };
     } catch (error) {
-      setIsLoading(false);
+      console.error("Fetching staff failed:", error);
       return {
         success: false,
         message: error.message || "Failed to fetch data",
       };
-    }
-  };
-
-  const fetchStaffDetails = async (staffId) => {
-    if (!accessToken || !staffId) return;
-
-    setIsLoading(true);
-
-    try {
-      // Fetch specific staff details using staffId
-      const response = await axios.get(
-        `${baseURl}/staff/get-staff/${staffId}`,
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-
-      console.log(response.data);
-
-      if (response.status === 200) {
-        setIsLoading(false);
-        setCurrentStaff(response.data.data);
-
-        return { success: true };
-      }
-
+    } finally {
       setIsLoading(false);
-
-      return {
-        success: false,
-        message: response.data || "Failed to fetch data",
-      };
-    } catch (error) {
-      setIsLoading(false);
-      return {
-        success: false,
-        message: error.message || "Failed to fetch data",
-      };
     }
-  };
+  }, [accessToken]);
 
-  const toggleStatus = async (staffId, action) => {
-    if (!(staffId && action)) {
-      return { success: false, message: "staffId and action are required." };
-    }
-
-    try {
+  const fetchStaffDetails = useCallback(
+    async (staffId) => {
+      if (!accessToken || !staffId) return;
       setIsLoading(true);
-
-      const response = await axios.patch(
-        `${baseURl}/staff/toggleStatus`,
-        { staffId, action },
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-
-      console.log(response.data);
-
-      if (response.status < 400) {
+      try {
+        const response = await axios.get(
+          `${baseURl}/staff/get-staff/${staffId}`,
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+        setCurrentStaff(response.data.data);
+        return response.status === 200
+          ? { success: true }
+          : { success: false, message: "Failed to fetch data" };
+      } catch (error) {
+        console.error("Fetching staff details failed:", error);
+        return {
+          success: false,
+          message: error.message || "Failed to fetch data",
+        };
+      } finally {
         setIsLoading(false);
-        return { success: true };
       }
+    },
+    [accessToken]
+  );
 
-      setIsLoading(false);
-      return { success: false };
-    } catch (error) {
-      setIsLoading(false);
-      return { success: false, message: "Unable to toggle status." };
-    }
-  };
+  const toggleStatus = useCallback(
+    async (staffId, action) => {
+      if (!(staffId && action))
+        return { success: false, message: "staffId and action are required." };
+      setIsLoading(true);
+      try {
+        const response = await axios.patch(
+          `${baseURl}/staff/toggleStatus`,
+          { staffId, action },
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+        return response.status < 400
+          ? { success: true }
+          : { success: false, message: "Failed to toggle status" };
+      } catch (error) {
+        console.error("Toggling status failed:", error);
+        return { success: false, message: "Unable to toggle status." };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [accessToken]
+  );
 
-  const value = {
-    user,
-    accessToken,
-    isAuthenticated,
-    isLoading,
-    allStaff,
-    currentStaff,
-    setIsLoading,
-    checkAuthStatus,
-    login,
-    logout,
-    updateAvatar,
-    updateUserProfile,
-    updatePassword,
-    register,
-    getStaff,
-    setAllStaff,
-    toggleStatus,
-    fetchStaffDetails,
-    setCurrentStaff,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      accessToken,
+      isAuthenticated,
+      isLoading,
+      allStaff,
+      currentStaff,
+      setIsLoading,
+      checkAuthStatus,
+      login,
+      logout,
+      updateAvatar,
+      updateUserProfile,
+      updatePassword,
+      register,
+      getStaff,
+      setAllStaff,
+      toggleStatus,
+      fetchStaffDetails,
+      setCurrentStaff,
+    }),
+    [
+      user,
+      accessToken,
+      isAuthenticated,
+      isLoading,
+      allStaff,
+      currentStaff,
+      checkAuthStatus,
+      login,
+      logout,
+      updateAvatar,
+      updateUserProfile,
+      updatePassword,
+      register,
+      getStaff,
+      toggleStatus,
+      fetchStaffDetails,
+    ]
+  );
 
   return (
     <StaffAuthContext.Provider value={value}>

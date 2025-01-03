@@ -6,23 +6,12 @@ const Dropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-   const { logout, user, accessToken } = useStaffAuth();
+  const { logout, user, accessToken } = useStaffAuth();
 
   const logoutStaff = async () => {
-    const response = await logout(accessToken);
-
-    const { success } = response;
-
-    if (success) {
-      alert("Logged out successfully");
-      // Wait for state and localStorage updates
-      // setTimeout(() => {
-      //   useNavigate("/admin/login");
-      // }, 1000); // Slight delay for async updates to settle
-    }
+    await logout(accessToken);
   };
 
-    
   // Handle click outside to close the dropdown
   const handleClickOutside = (event) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

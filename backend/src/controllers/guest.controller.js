@@ -249,7 +249,7 @@ const isAuthenticated = async (req, res) => {
       (await Guest.findById(decoded._id)) ||
       (await Staff.findById(decoded._id));
 
-    console.log(user);
+    // console.log(user);
     if (!user) return res.status(401).json({ authenticated: false });
 
     return res.json({ authenticated: true, user });

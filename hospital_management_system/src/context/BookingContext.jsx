@@ -1,7 +1,8 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { validateDates } from "../utils/validation";
 import axios from "axios";
 import { baseURl } from "../utils/constants";
+
 const BookingContext = createContext();
 
 export const useBookingContext = () => {
@@ -9,14 +10,14 @@ export const useBookingContext = () => {
 };
 
 export const BookingContextProvider = ({ children }) => {
-  const [bookings, setBookings] = useState();
+  const [bookings, setBookings] = useState([]);
   const [availableRooms, setAvailableRooms] = useState([]);
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       const response = await axios.get(`${baseURl}/booking/requests`, {
         withCredentials: true,
@@ -25,17 +26,20 @@ export const BookingContextProvider = ({ children }) => {
         },
       });
 
-      //   console.log(response.data.data);
-
       if (response.status === 200) {
         setBookings(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
+      setError("Failed to fetch bookings. Please try again.");
     }
-  };
+  }, []);
 
-  const handleSearch = async (checkInDate, checkOutDate) => {
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  const handleSearch = useCallback(async (checkInDate, checkOutDate) => {
     const validationError = validateDates(checkInDate, checkOutDate);
 
     if (validationError) {
@@ -49,13 +53,12 @@ export const BookingContextProvider = ({ children }) => {
       const data = await checkRoomAvailability(checkInDate, checkOutDate);
       setAvailableRooms(data.rooms);
       setSelectedRoom(null);
-      console.log(data);
     } catch (err) {
       setError("Failed to fetch available rooms. Please try again.");
     }
-  };
+  }, []);
 
-  const checkRoomAvailability = async (checkInDate, checkOutDate) => {
+  const checkRoomAvailability = useCallback(async (checkInDate, checkOutDate) => {
     if (!checkInDate || !checkOutDate) {
       setError("Both check-in and check-out dates are required.");
       return;
@@ -79,35 +82,38 @@ export const BookingContextProvider = ({ children }) => {
       setError("Failed to fetch available rooms. Please try again.");
       throw error;
     }
-  };
+  }, []);
 
-  const submitBooking = async (bookingData, userRole) => {
+  const submitBooking = useCallback(async (bookingData, userRole) => {
     const url = `${baseURl}/booking/${
       userRole === "guest" ? "reserve" : "reserve-by-staff"
     }`;
 
-    // console.log(url);
+    try {
+      const response = await axios.post(url, bookingData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
 
-    const response = await axios.post(`${url}`, bookingData, {
-      withCredentials: true,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    });
+      if (response.status > 400) {
+        return { success: false, message: "Room reservation failed." };
+      }
 
-    if (response.status > 400) {
-      return { success: false, message: "Room reserved failed." };
+      setCheckInDate("");
+      setCheckOutDate("");
+      setAvailableRooms([]);
+      setSelectedRoom(null);
+
+      return { success: true, message: "Room reserved successfully." };
+    } catch (error) {
+      console.error("Error submitting booking:", error);
+      return { success: false, message: "Room reservation failed." };
     }
+  }, []);
 
-    setCheckInDate("");
-    setCheckOutDate("");
-    setAvailableRooms([]);
-    setSelectedRoom(null);
-
-    return { success: true, message: "Room reserved sucessfully." };
-  };
-
-  const values = {
+  const values = useMemo(() => ({
     error,
     bookings,
     availableRooms,
@@ -123,7 +129,18 @@ export const BookingContextProvider = ({ children }) => {
     handleSearch,
     checkRoomAvailability,
     submitBooking,
-  };
+  }), [
+    error,
+    bookings,
+    availableRooms,
+    checkInDate,
+    checkOutDate,
+    selectedRoom,
+    fetchBookings,
+    handleSearch,
+    checkRoomAvailability,
+    submitBooking,
+  ]);
 
   return (
     <BookingContext.Provider value={values}>{children}</BookingContext.Provider>

@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { baseURl } from "../../utils/constants";
 import axios from "axios";
 
@@ -16,27 +23,29 @@ export const GuestAuthProvider = ({ children }) => {
   const [allGuests, setAllGuests] = useState([]);
   const [currentGuest, setCurrentGuest] = useState(null);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${baseURl}/guest/auth-status`, {
         withCredentials: true,
       });
 
-      // console.log(response.data.user);
-
       if (response.data.authenticated) {
         setIsAuthenticated(true);
         localStorage.setItem("user", JSON.stringify(response.data.data.user));
+      } else {
+        localStorage.removeItem("user");
       }
-
-      localStorage.removeItem("user");
     } catch (error) {
       localStorage.removeItem("user");
       console.error("Auth status check failed:", error);
     }
-  };
+  }, []);
 
-  const login = async (email, password) => {
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  const login = useCallback(async (email, password) => {
     setIsLoading(true);
     try {
       const response = await axios.post(
@@ -67,11 +76,11 @@ export const GuestAuthProvider = ({ children }) => {
       localStorage.removeItem("accessToken");
       return { success: false, message: error.message || "Unable to login." };
     }
-  };
+  }, []);
 
-  const register = async (firstName, lastName, email, password) => {
+  const register = useCallback(async (firstName, lastName, email, password) => {
     if (
-      [firstName, lastName, email, password].includes(
+      [firstName, lastName, email, password].some(
         (field) => field.trim() === ""
       )
     ) {
@@ -101,9 +110,9 @@ export const GuestAuthProvider = ({ children }) => {
         error: error.message || "Unable to register guest.",
       };
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       const response = await axios.patch(
         `${baseURl}/guest/logout`,
@@ -127,55 +136,24 @@ export const GuestAuthProvider = ({ children }) => {
       localStorage.removeItem("accessToken");
       console.error("Logout failed:", error);
     }
-  };
+  }, [accessToken]);
 
-  const registerGuestByStaff = async (
-    firstName,
-    lastName,
-    email,
-    password,
-    phone,
-    address,
-    country,
-    city,
-    cardNo = null,
-    cvv = null,
-    cashPayment = false
-  ) => {
-    // Validation: Check mandatory fields
-    if (
-      [
-        firstName,
-        lastName,
-        email,
-        password,
-        phone,
-        country,
-        city,
-        address,
-      ].some((field) => !field || (typeof field === "string" && !field.trim()))
-    ) {
-      return {
-        success: false,
-        message: "All fields except payment details are required.",
-      };
-    }
-
-    // Validation: Payment details if not cash payment
-    if (!cashPayment && (!cardNo || !cvv)) {
-      return {
-        success: false,
-        message: "Card number and CVV are required for non-cash payments.",
-      };
-    }
-
-    try {
-      setIsLoading(true);
-
-      // API request to register guest by staff
-      const response = await axios.post(
-        `${baseURl}/guest/register-by-staff`,
-        {
+  const registerGuestByStaff = useCallback(
+    async (
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      address,
+      country,
+      city,
+      cardNo = null,
+      cvv = null,
+      cashPayment = false
+    ) => {
+      if (
+        [
           firstName,
           lastName,
           email,
@@ -184,32 +162,65 @@ export const GuestAuthProvider = ({ children }) => {
           country,
           city,
           address,
-          cardNo: cashPayment ? null : cardNo,
-          cvv: cashPayment ? null : cvv,
-          cashPayment,
-        },
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-
-      if (response.status < 400) {
-        setIsLoading(false);
-        return { success: true };
+        ].some(
+          (field) => !field || (typeof field === "string" && !field.trim())
+        )
+      ) {
+        return {
+          success: false,
+          message: "All fields except payment details are required.",
+        };
       }
 
-      return { success: false, message: "Failed to register guest." };
-    } catch (error) {
-      setIsLoading(false);
-      return {
-        success: false,
-        message: error.message || "Unable to register guest.",
-      };
-    }
-  };
+      if (!cashPayment && (!cardNo || !cvv)) {
+        return {
+          success: false,
+          message: "Card number and CVV are required for non-cash payments.",
+        };
+      }
 
-  const fetchGuests = async (accessToken) => {
+      try {
+        setIsLoading(true);
+
+        const response = await axios.post(
+          `${baseURl}/guest/register-by-staff`,
+          {
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            country,
+            city,
+            address,
+            cardNo: cashPayment ? null : cardNo,
+            cvv: cashPayment ? null : cvv,
+            cashPayment,
+          },
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        if (response.status < 400) {
+          setIsLoading(false);
+          return { success: true };
+        }
+
+        return { success: false, message: "Failed to register guest." };
+      } catch (error) {
+        setIsLoading(false);
+        return {
+          success: false,
+          message: error.message || "Unable to register guest.",
+        };
+      }
+    },
+    [accessToken]
+  );
+
+  const fetchGuests = useCallback(async () => {
     if (!accessToken) return;
 
     setIsLoading(true);
@@ -221,8 +232,6 @@ export const GuestAuthProvider = ({ children }) => {
       });
 
       if (response.status === 200) {
-        // console.log(response.data.data);
-
         setIsLoading(false);
         setAllGuests(response.data.data);
 
@@ -231,7 +240,7 @@ export const GuestAuthProvider = ({ children }) => {
 
       setIsLoading(false);
       return {
-        success: true,
+        success: false,
         message: response.data || "Failed to fetch data",
       };
     } catch (error) {
@@ -241,63 +250,79 @@ export const GuestAuthProvider = ({ children }) => {
         message: error.message || "Failed to fetch data",
       };
     }
-  };
+  }, [accessToken]);
 
-  const fetchGuestDetails = async (guestId) => {
-    if (!accessToken || !guestId) return;
+  const fetchGuestDetails = useCallback(
+    async (guestId) => {
+      if (!accessToken || !guestId) return;
 
-    setIsLoading(true);
+      setIsLoading(true);
 
-    try {
-      // Fetch specific staff details using guestId
-      const response = await axios.get(
-        `${baseURl}/guest/get-guest/${guestId}`,
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
+      try {
+        const response = await axios.get(
+          `${baseURl}/guest/get-guest/${guestId}`,
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        if (response.status === 200) {
+          setIsLoading(false);
+          setCurrentGuest(response.data.data);
+
+          return { success: true };
         }
-      );
 
-      console.log(response.data);
-
-      if (response.status === 200) {
         setIsLoading(false);
-        setCurrentGuest(response.data.data);
-
-        return { success: true };
+        return {
+          success: false,
+          message: response.data || "Failed to fetch data",
+        };
+      } catch (error) {
+        setIsLoading(false);
+        return {
+          success: false,
+          message: error.message || "Failed to fetch data",
+        };
       }
+    },
+    [accessToken]
+  );
 
-      setIsLoading(false);
-
-      return {
-        success: false,
-        message: response.data || "Failed to fetch data",
-      };
-    } catch (error) {
-      setIsLoading(false);
-      return {
-        success: false,
-        message: error.message || "Failed to fetch data",
-      };
-    }
-  };
-
-  const value = {
-    user,
-    accessToken,
-    isAuthenticated,
-    isLoading,
-    allGuests,
-    currentGuest,
-    login,
-    logout,
-    register,
-    registerGuestByStaff,
-    fetchGuests,
-    fetchGuestDetails,
-    setCurrentGuest,
-    checkAuthStatus,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      accessToken,
+      isAuthenticated,
+      isLoading,
+      allGuests,
+      currentGuest,
+      login,
+      logout,
+      register,
+      registerGuestByStaff,
+      fetchGuests,
+      fetchGuestDetails,
+      setCurrentGuest,
+      checkAuthStatus,
+    }),
+    [
+      user,
+      accessToken,
+      isAuthenticated,
+      isLoading,
+      allGuests,
+      currentGuest,
+      login,
+      logout,
+      register,
+      registerGuestByStaff,
+      fetchGuests,
+      fetchGuestDetails,
+      checkAuthStatus,
+    ]
+  );
 
   return (
     <GuestAuthContext.Provider value={value}>

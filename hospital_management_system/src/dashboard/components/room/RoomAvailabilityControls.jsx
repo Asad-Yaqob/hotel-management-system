@@ -19,9 +19,7 @@ export default function RoomAvailabilityControls({
             key={option}
             onClick={() => onAvailabilityChange(option)}
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              currentAvailability === option
-                ? getAvailabilityColor(option)
-                : "bg-gray-100"
+              getAvailabilityColor(currentAvailability === option ? "available" : "occupied")
             }`}
           >
             {option}

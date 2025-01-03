@@ -10,6 +10,10 @@ const RoomEditForm = ({ room, onCancel }) => {
   const { updateRoom, isLoading, setCurrentRoom } = useRoomContext();
   const { accessToken } = useStaffAuth();
 
+  useEffect(() => {
+    console.log(room);
+  }, []);
+
   // Validation Schema using Yup
   const validationSchema = Yup.object({
     roomNo: Yup.string()
@@ -35,7 +39,6 @@ const RoomEditForm = ({ room, onCancel }) => {
       .min(10, "Description must be at least 10 characters"),
   });
 
-  
   // Formik Setup
   const formik = useFormik({
     initialValues: {

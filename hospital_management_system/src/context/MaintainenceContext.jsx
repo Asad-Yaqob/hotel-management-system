@@ -1,6 +1,13 @@
-import { createContext, useContext, useState } from "react";
-import { baseURl } from "../utils/constants";
+import {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
+import { baseURl } from "../utils/constants";
 
 const MaintainenceContext = createContext();
 
@@ -13,7 +20,7 @@ export const MaintainenceProvider = ({ children }) => {
   const [mainRequests, setMainRequests] = useState([]);
   const [statuses, setStatuses] = useState({});
 
-  const fetchMaintainenceRequests = async (accessToken) => {
+  const fetchMaintainenceRequests = useCallback(async (accessToken) => {
     if (!accessToken) return;
 
     try {
@@ -23,123 +30,137 @@ export const MaintainenceProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      // console.log(response.data.data.requests);
-
       if (response.status === 200) {
         setMainRequests(response.data.data.requests);
       }
     } catch (error) {
-      console.error("Error fetching cleaning requests:", error);
+      console.error("Error fetching maintenance requests:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
- const handleStatusChange = (maintainenceId, newStatus) => {
-//    console.log(`Changing status for ${maintainenceId} to ${newStatus}`);
-   setStatuses((prevStatuses) => ({
-     ...prevStatuses,
-     [maintainenceId]: newStatus,
-   }));
-//    console.log("Updated statuses:", statuses);
- };
+  const handleStatusChange = useCallback((maintainenceId, newStatus) => {
+    setStatuses((prevStatuses) => ({
+      ...prevStatuses,
+      [maintainenceId]: newStatus,
+    }));
+  }, []);
 
- const handleUpdateStatus = async (maintainenceId, accessToken) => {
+  const handleUpdateStatus = useCallback(
+    async (maintainenceId, accessToken) => {
+      if (!accessToken) return;
 
-   if (!accessToken) return;
-   const newStatus =
-     statuses[maintainenceId] || "reported";
+      const newStatus = statuses[maintainenceId] || "reported";
 
-   if (!newStatus) {
-     console.error(`No status found for ${maintainenceId}`);
-     return;
-   }
-
-   console.log("Updating status:", newStatus);
-
-   try {
-     setIsLoading(true);
-     const response = await axios.patch(
-       `${baseURl}/maintainence/update/${maintainenceId}`,
-       { status: newStatus },
-       {
-         withCredentials: true,
-         headers: { Authorization: `Bearer ${accessToken}` },
-       }
-     );
-
-     console.log(response.data)
-
-     if (response.status === 200) {
-       console.log("Status updated successfully");
-       return { success: true, message: "Status updated." };
-     }
-
-     return { success: false, message: "Failed to update status." };
-   } catch (error) {
-     console.error("Error updating status:", error);
-     return {
-       success: false,
-       message: error.message || "Failed to update status.",
-     };
-   } finally {
-     setIsLoading(false);
-   }
- };
-
- const reportMaintainece = async (accessToken, roomId, description) => {
-
-  if (!accessToken) return;
-
-  try {
-    setIsLoading(true);
-
-    const response = await axios.post(
-      `${baseURl}/maintainence/add`,
-      { roomId , description },
-      {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
+      if (!newStatus) {
+        console.error(`No status found for ${maintainenceId}`);
+        return;
       }
-    );
-    
-    if (response.status < 400) {
 
-      return {
-        success: true,
-        message: "Maintainance reported successfully.",
+      try {
+        setIsLoading(true);
+        const response = await axios.patch(
+          `${baseURl}/maintainence/update/${maintainenceId}`,
+          { status: newStatus },
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        if (response.status === 200) {
+          console.log("Status updated successfully");
+          return { success: true, message: "Status updated." };
+        }
+
+        return { success: false, message: "Failed to update status." };
+      } catch (error) {
+        console.error("Error updating status:", error);
+        return {
+          success: false,
+          message: error.message || "Failed to update status.",
+        };
+      } finally {
+        setIsLoading(false);
       }
-    }
+    },
+    [statuses]
+  );
 
-    return {
-      success: false,
-      message: response.data || "Failed to report maintainance.",
-    }
+  const reportMaintenance = useCallback(
+    async (accessToken, roomId, description) => {
+      if (!accessToken) return;
 
-  } catch (error) {
-    return {
-      success: false,
-      message: error || "Failed to report maintainance.",
-    }
-  } finally {
-    setIsLoading(false);
-  }
- }
+      try {
+        setIsLoading(true);
 
+        const response = await axios.post(
+          `${baseURl}/maintainence/add`,
+          { roomId, description },
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
 
-  const values = {
-    isLoading,
-    statuses,
-    mainRequests,
-    fetchMaintainenceRequests,
-    handleStatusChange,
-    handleUpdateStatus,
-    reportMaintainece,
-  };
+        if (response.status < 400) {
+          return {
+            success: true,
+            message: "Maintenance reported successfully.",
+          };
+        }
+
+        return {
+          success: false,
+          message: response.data || "Failed to report maintenance.",
+        };
+      } catch (error) {
+        return {
+          success: false,
+          message: error.message || "Failed to report maintenance.",
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  // useEffect(() => {
+  //   // Fetch maintenance requests when the component mounts
+  //   // You can pass the accessToken here if available
+  //   // fetchMaintainenceRequests(accessToken);
+  // }, [fetchMaintainenceRequests]);
+
+  const values = useMemo(
+    () => ({
+      isLoading,
+      statuses,
+      mainRequests,
+      fetchMaintainenceRequests,
+      handleStatusChange,
+      handleUpdateStatus,
+      reportMaintenance,
+    }),
+    [
+      isLoading,
+      statuses,
+      mainRequests,
+      fetchMaintainenceRequests,
+      handleStatusChange,
+      handleUpdateStatus,
+      reportMaintenance,
+    ]
+  );
 
   return (
     <MaintainenceContext.Provider value={values}>
       {children}
     </MaintainenceContext.Provider>
   );
+};
+
+MaintainenceProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

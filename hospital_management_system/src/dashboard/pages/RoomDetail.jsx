@@ -26,14 +26,13 @@ const RoomDetails = () => {
 
   useEffect(() => {
     const loadRoomData = async () => {
-      await fetchCurrentRoom(accessToken, roomId);
+      await fetchCurrentRoom(roomId);
     };
 
-    // console.log('Token: ' + accessToken);
     loadRoomData();
   }, []);
 
-  // console.log(currentRoom._id);
+
 
   const handleStatusChange = async () => {
 
