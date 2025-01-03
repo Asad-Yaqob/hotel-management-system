@@ -1,7 +1,4 @@
 import React, { useEffect } from "react";
-import HeroImage from "../assets/img/deluxe.jpeg";
-import E from "../assets/img/e.jpeg";
-import P from "../assets/img/p.jpeg";
 import { Link } from "react-router-dom";
 import { useRoomContext } from "../context/RoomContext";
 

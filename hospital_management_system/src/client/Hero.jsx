@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import HeroImage from '../assets/img/deluxe.jpeg';
-import E from '../assets/img/e.jpeg';
-import P from '../assets/img/p.jpeg';
+import HeroImage from "../../public/img/deluxe.jpeg";
+import E from "../../public/img/e.jpeg";
+import P from "../../public/img/p.jpeg";
 
 const Hero = () => {
   const images = [HeroImage, E, P];

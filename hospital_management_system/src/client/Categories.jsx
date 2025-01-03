@@ -1,6 +1,5 @@
 import React from 'react';
-import HeroImage from '../assets/img/Hero.jpeg';
-import display from '../assets/img/display.jpeg';
+import display from "../../public/img/display.jpeg";
 
 const Categories = () => {
   return (

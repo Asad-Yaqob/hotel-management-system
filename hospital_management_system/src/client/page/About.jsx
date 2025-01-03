@@ -1,11 +1,9 @@
 import React, { useRef } from 'react'
-import HeroImage from '../../assets/img/bg.jpeg';
+import HeroImage from "../../../public/img/bg.jpeg";
 import { FaArrowRight } from "react-icons/fa6";
 import { FaWhatsapp  , FaFacebook , FaTwitter , FaInstagram} from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { IoMdMail } from "react-icons/io";
-import { IoCall } from "react-icons/io5";
-import { FaLocationDot } from "react-icons/fa6";
 
 const About = () => {
 

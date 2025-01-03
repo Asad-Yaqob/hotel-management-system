@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import HeroImage from "../../assets/img/Hero.jpeg";
+import HeroImage from "../../../public/img/Hero.jpeg";
 
 import { FaArrowDown } from "react-icons/fa6";
 import { LuBed } from "react-icons/lu";
