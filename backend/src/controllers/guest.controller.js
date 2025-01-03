@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { COOKIE_OPTIONS } from "../constants.js";
 import { Staff } from "../models/staff.model.js";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -234,14 +235,25 @@ const logoutGuest = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Loged out"));
 });
 
-const isAuthenticated = (req, res) => {
+const isAuthenticated = async (req, res) => {
   try {
     const accessToken = req.cookies.accessToken;
 
     if (!accessToken) return res.status(401).json({ authenticated: false });
 
-    return res.json({ authenticated: true, accessToken });
-    
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+    // console.log(decoded);
+
+    const user =
+      (await Guest.findById(decoded._id)) ||
+      (await Staff.findById(decoded._id));
+
+    console.log(user);
+    if (!user) return res.status(401).json({ authenticated: false });
+
+    return res.json({ authenticated: true, user });
+
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }

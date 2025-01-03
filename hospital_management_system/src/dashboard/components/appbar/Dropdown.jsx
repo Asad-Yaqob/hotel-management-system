@@ -6,8 +6,7 @@ const Dropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const { logout, user, accessToken } = useStaffAuth();
-    const navigate = useNavigate();
+   const { logout, user, accessToken } = useStaffAuth();
 
   const logoutStaff = async () => {
     const response = await logout(accessToken);
@@ -15,10 +14,11 @@ const Dropdown = () => {
     const { success } = response;
 
     if (success) {
-      // Wait for state to update
-      setTimeout(() => {
-        navigate("/admin");
-      }, 500);
+      alert("Logged out successfully");
+      // Wait for state and localStorage updates
+      // setTimeout(() => {
+      //   useNavigate("/admin/login");
+      // }, 1000); // Slight delay for async updates to settle
     }
   };
 

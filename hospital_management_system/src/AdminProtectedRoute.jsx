@@ -1,22 +1,22 @@
-import { useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { useStaffAuth } from "./context/auth/StaffAuthContext";
+import { Navigate } from "react-router-dom";
 
-function AdminProtectedRoute({ children }) {
+export function AdminProtectedRoute({ children }) {
   const { isAuthenticated, checkAuthStatus } = useStaffAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function verify() {
+    const verify = async () => {
       await checkAuthStatus();
-    }
+      setIsLoading(false); 
+    };
     verify();
-  }, [isAuthenticated]);
+  }, []);
 
-  if (isAuthenticated === null) {
-    return <p>Loading...</p>; // Optional loading state
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return isAuthenticated ? children : <Navigate to="/admin/login" />;
 }
-
-export default AdminProtectedRoute;

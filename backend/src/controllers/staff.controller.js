@@ -152,8 +152,8 @@ const logoutStaff = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .clearCookie("access_token", COOKIE_OPTIONS)
-    .clearCookie("refresh_token", COOKIE_OPTIONS)
+    .clearCookie("accessToken", COOKIE_OPTIONS)
+    .clearCookie("refreshToken", COOKIE_OPTIONS)
     .json(new ApiResponse(200, {}, "Logged Out Successfully"));
 });
 
@@ -344,7 +344,6 @@ const toggleStaffStatus = asyncHandler(async (req, res) => {
 });
 
 const getStaffById = asyncHandler(async (req, res) => {
-  
   const { staffId } = req.params;
 
   if (!staffId) {

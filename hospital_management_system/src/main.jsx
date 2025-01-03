@@ -30,7 +30,7 @@ import GuestDetail from "./dashboard/pages/GuestDetail";
 import SchedualCleaning from "./dashboard/components/housekeeping/SchedualCleaning";
 import RoomDetailPage from "./client/page/RoomDetailPage";
 import ProtectedRoute from "./ProtectedRoute";
-import AdminProtectedRoute from "./AdminProtectedRoute";
+import {AdminProtectedRoute} from "./AdminProtectedRoute";
 import LoginForm from "./client/components/navbar/LoginForm";
 import RegisterForm from "./client/components/navbar/RegisterForm";
 import Login from "./dashboard/pages/Login";

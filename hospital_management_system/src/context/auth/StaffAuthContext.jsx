@@ -6,11 +6,19 @@ import { baseURl } from "../../utils/constants";
 const StaffAuthContext = createContext(null);
 
 export const StaffAuthProvider = ({ children }) => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(
+    () => JSON.parse(localStorage.getItem("user")) || {}
+  );
+  const [accessToken, setAccessToken] = useState(
+    () => localStorage.getItem("accessToken") || null
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    return !!user;
+  });
+
   const [currentStaff, setCurrentStaff] = useState(null);
   const [allStaff, setAllStaff] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuthStatus = async () => {
@@ -19,16 +27,17 @@ export const StaffAuthProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      // console.log(response.data);
-
       if (response.data.authenticated) {
-        setAccessToken(response.data.accessToken);
         setIsAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      } else {
+        setIsAuthenticated(false);
+        localStorage.removeItem("user");
       }
     } catch (error) {
-      console.error("Auth status check failed:", error);
-      setAccessToken(null);
       setIsAuthenticated(false);
+      localStorage.removeItem("user");
+      console.error("Auth status check failed:", error);
     }
   };
 
@@ -40,20 +49,30 @@ export const StaffAuthProvider = ({ children }) => {
         { withCredentials: true }
       );
 
-      console.log(response.data.data.data);
+      const accessToken = response.data.data.accessToken;
+      const userData = response.data.data.data;
+
+      // console.log(response.data.data);
 
       if (response.data.data) {
-        setUser(response.data.data.data);
+        setUser(userData);
         setIsAuthenticated(true);
-        // setAccessToken(response.data.data.accessToken);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("accessToken", accessToken);
+        setIsLoading(false);
+
         return { success: true };
       }
 
-      return { success: false };
-    } catch (error) {
-      setUser(null);
+      setIsLoading(false);
       setIsAuthenticated(false);
-      throw new Error("Login failed");
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+    } catch (error) {
+      setIsLoading(false);
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      return { success: false, message: error.message || "Unable to login." };
     }
   };
 
@@ -85,9 +104,16 @@ export const StaffAuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (accessToken) => {
+    // Clear state and localStorage immediately
+    setUser({});
+    setAccessToken(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+
     try {
-      await axios.patch(
+      const response = await axios.patch(
         `${baseURl}/staff/logout`,
         {},
         {
@@ -95,19 +121,13 @@ export const StaffAuthProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-
-     
-      setUser(null);
-      setAccessToken(null);
-      setIsAuthenticated(false);
-
-      return { success: true };
+      console.log(response);
+      if (response.status === 200) {
+        return { success: true };
+      }
     } catch (error) {
       console.error("Logout failed:", error);
       return { success: true, message: "Logout failed" };
-    } finally {
-      // Reset isLoading to prevent infinite loading state
-      setIsLoading(false);
     }
   };
 

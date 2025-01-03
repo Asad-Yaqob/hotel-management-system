@@ -19,7 +19,7 @@ function Login() {
     if (isAuthenticated) {
       navigate("/admin");
     }
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const formik = useFormik({
     initialValues: {
