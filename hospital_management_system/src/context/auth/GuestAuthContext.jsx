@@ -40,8 +40,6 @@ export const GuestAuthProvider = ({ children }) => {
     }
   }, []);
 
- 
-
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
     try {
@@ -53,12 +51,12 @@ export const GuestAuthProvider = ({ children }) => {
         }
       );
 
-      console.log(response.data.data)
+      console.log(response.data.data);
 
       if (response.data.data) {
-        setUser(response.data.data.data);
+        setUser(response.data.data.user);
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(response.data.data));
+        localStorage.setItem("user", JSON.stringify(response.data.data.user));
         localStorage.setItem("accessToken", response.data.data.accessToken);
         setIsLoading(false);
 
