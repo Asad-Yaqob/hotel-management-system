@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { validateDates } from "../utils/validation";
 import axios from "axios";
 import { baseURl } from "../utils/constants";
@@ -35,9 +35,6 @@ export const BookingContextProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
 
   const handleSearch = useCallback(async (checkInDate, checkOutDate) => {
     const validationError = validateDates(checkInDate, checkOutDate);

@@ -149,10 +149,7 @@ export const RoomContextProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchRooms();
-  }, [fetchRooms]);
-
+  
   const values = useMemo(() => ({
     isLoading,
     roomData,

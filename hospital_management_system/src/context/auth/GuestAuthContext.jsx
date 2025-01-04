@@ -11,6 +11,7 @@ import axios from "axios";
 const GuestAuthContext = createContext(null);
 
 export const GuestAuthProvider = ({ children }) => {
+
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem("user");
@@ -25,7 +26,7 @@ export const GuestAuthProvider = ({ children }) => {
 
   const [accessToken, setAccessToken] = useState(() => {
     const storedToken = localStorage.getItem("accessToken");
-    return storedToken || null; // Default to null if no token is stored
+    return storedToken || null; 
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);

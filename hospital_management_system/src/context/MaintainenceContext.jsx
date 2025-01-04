@@ -127,12 +127,6 @@ export const MaintainenceProvider = ({ children }) => {
     []
   );
 
-  // useEffect(() => {
-  //   // Fetch maintenance requests when the component mounts
-  //   // You can pass the accessToken here if available
-  //   // fetchMaintainenceRequests(accessToken);
-  // }, [fetchMaintainenceRequests]);
-
   const values = useMemo(
     () => ({
       isLoading,
