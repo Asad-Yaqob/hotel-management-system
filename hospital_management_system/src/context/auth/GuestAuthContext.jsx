@@ -11,20 +11,22 @@ import axios from "axios";
 const GuestAuthContext = createContext(null);
 
 export const GuestAuthProvider = ({ children }) => {
- const [user, setUser] = useState(() => {
-   try {
-     const storedUser = localStorage.getItem("user");
-     return storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null; // Default to null if no user is stored
-   } catch (error) {
-     console.error("Error parsing user data:", error);
-     return null; // Default to null in case of error
-   }
- });
+  const [user, setUser] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      return storedUser && storedUser !== "undefined"
+        ? JSON.parse(storedUser)
+        : null;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return null;
+    }
+  });
 
- const [accessToken, setAccessToken] = useState(() => {
-   const storedToken = localStorage.getItem("accessToken");
-   return storedToken || null; // Default to null if no token is stored
- });
+  const [accessToken, setAccessToken] = useState(() => {
+    const storedToken = localStorage.getItem("accessToken");
+    return storedToken || null; // Default to null if no token is stored
+  });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,41 +51,40 @@ export const GuestAuthProvider = ({ children }) => {
     }
   }, []);
 
- const login = useCallback(async (email, password) => {
-   setIsLoading(true);
-   try {
-     const response = await axios.post(
-       `${baseURl}/guest/login`,
-       { email, password },
-       {
-         withCredentials: true,
-       }
-     );
+  const login = useCallback(async (email, password) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(
+        `${baseURl}/guest/login`,
+        { email, password },
+        {
+          withCredentials: true,
+        }
+      );
 
-     console.log(response.data.data);
+      // console.log(response.data.data);
 
-     if (response.data && response.data.data) {
-       setUser(response.data.data.user);
-       setIsAuthenticated(true);
-       localStorage.setItem("user", JSON.stringify(response.data.data.user));
-       localStorage.setItem("accessToken", response.data.data.accessToken);
-       setIsLoading(false);
+      if (response.data && response.data.data) {
+        setUser(response.data.data.user);
+        setIsAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(response.data.data.user));
+        localStorage.setItem("accessToken", response.data.data.accessToken);
+        setIsLoading(false);
 
-       return { success: true };
-     }
+        return { success: true };
+      }
 
-     setIsLoading(false);
-     localStorage.removeItem("user");
-     localStorage.removeItem("accessToken");
-     return { success: false };
-   } catch (error) {
-     setIsLoading(false);
-     localStorage.removeItem("user");
-     localStorage.removeItem("accessToken");
-     return { success: false, message: error.message || "Unable to login." };
-   }
- }, []);
-
+      setIsLoading(false);
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      return { success: false };
+    } catch (error) {
+      setIsLoading(false);
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      return { success: false, message: error.message || "Unable to login." };
+    }
+  }, []);
 
   const register = useCallback(async (firstName, lastName, email, password) => {
     if (
