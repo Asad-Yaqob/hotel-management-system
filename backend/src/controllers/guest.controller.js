@@ -202,17 +202,17 @@ const loginGuest = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  res
-    .status(200)
-    .cookie("accessToken", accessToken, COOKIE_OPTIONS)
-    .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-    .json(
-      new ApiResponse(
-        200,
-        { user: loggedInGuest, accessToken, refreshToken },
-        "Guest Logged In Successfully"
-      )
-    );
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+      .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+      .json(
+        new ApiResponse(
+          200,
+          { user: loggedInGuest, accessToken, refreshToken },
+          "Guest Logged In Successfully"
+        )
+      );
 });
 
 const logoutGuest = asyncHandler(async (req, res) => {
