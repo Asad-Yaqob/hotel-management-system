@@ -1,5 +1,6 @@
 export const roles = ["manager", "housekeeping", "maintainence", "receptionist", "admin"];
 export const baseURl = "https://luxurystay-hospitality-backend.onrender.com/api/v1";
+// export const baseURl = "http://localhost:8080/api/v1";
 
 export const STATUS_OPTIONS = [
   "clean",
@@ -7,6 +8,7 @@ export const STATUS_OPTIONS = [
   "out-of-service",
   "maintenance",
 ];
+
 export const AVAILABILITY_OPTIONS = ["available", "occupied"];
 
 export const STATUS_COLORS = {
