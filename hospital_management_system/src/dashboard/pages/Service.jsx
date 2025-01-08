@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useStaffAuth } from "../../context/auth/StaffAuthContext";
+
 import AddService from "../components/service/AddService";
+import { useStaffAuth } from "../../context/auth/StaffAuthContext";
+import { baseURl } from "../../utils/constants";
 
 const Service = () => {
   const [showAddService, setShowAddService] = useState(false);
@@ -9,8 +11,7 @@ const Service = () => {
   const [services, setServices] = useState([]);
 
   const { accessToken } = useStaffAuth();
-  const baseURl = "http://localhost:8000/api/v1";
-
+  
   // const [services, setServices] = useState([
   //   {
   //     id: 1,
