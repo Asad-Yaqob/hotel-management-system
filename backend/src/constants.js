@@ -1,8 +1,10 @@
 export const DBNAME = "hotelmanagementsystem";
 
 export const COOKIE_OPTIONS = {
-  HttpOnly: true,
-  Secure: true,
-  SameSite: "None", 
-  Path: "/", 
+  httpOnly: true,
+  secure: true, 
+  sameSite: "None", 
+  path: "/", 
+  maxAge: 24 * 60 * 60 * 1000, 
 };
+
