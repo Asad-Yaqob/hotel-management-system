@@ -12,7 +12,6 @@ import axios from "axios";
 const GuestAuthContext = createContext(null);
 
 export const GuestAuthProvider = ({ children }) => {
-
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem("user");
@@ -32,9 +31,12 @@ export const GuestAuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // useEffect(() => {
-
-  // }, [])
+  useEffect(() => {
+    async function verify() {
+      await checkAuthStatus();
+    }
+    verify();
+  }, [isAuthenticated, accessToken]);
 
   const checkAuthStatus = useCallback(async () => {
     try {
@@ -42,7 +44,7 @@ export const GuestAuthProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      if (response.data.authenticated) {
+      if (response.data) {
         setIsAuthenticated(true);
         setAccessToken(response.data.accessToken);
       } else {

@@ -11,7 +11,7 @@ function ProtectedRoute({ children }) {
       await checkAuthStatus();
     }
     verify();
-  }, []);
+  }, [isAuthenticated]);
 
   if (isAuthenticated === null) {
     return <p>Loading...</p>; // Optional loading state

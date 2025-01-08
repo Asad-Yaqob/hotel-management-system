@@ -11,6 +11,7 @@ import { baseURl } from "../../utils/constants";
 const StaffAuthContext = createContext(null);
 
 export const StaffAuthProvider = ({ children }) => {
+
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem("user");
@@ -22,10 +23,12 @@ export const StaffAuthProvider = ({ children }) => {
       return {};
     }
   });
-  const [accessToken, setAccessToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [currentStaff, setCurrentStaff] = useState(null);
   const [allStaff, setAllStaff] = useState(null);
+  
+  const [accessToken, setAccessToken] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const checkAuthStatus = useCallback(async () => {
