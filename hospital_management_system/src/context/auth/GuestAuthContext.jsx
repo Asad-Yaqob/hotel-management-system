@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useEffect,
 } from "react";
 import { baseURl } from "../../utils/constants";
 import axios from "axios";
@@ -24,15 +25,16 @@ export const GuestAuthProvider = ({ children }) => {
     }
   });
 
-  const [accessToken, setAccessToken] = useState(() => {
-    const storedToken = localStorage.getItem("accessToken");
-    return storedToken || null; 
-  });
+  const [currentGuest, setCurrentGuest] = useState(null);
+  const [allGuests, setAllGuests] = useState([]);
 
+  const [accessToken, setAccessToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [allGuests, setAllGuests] = useState([]);
-  const [currentGuest, setCurrentGuest] = useState(null);
+
+  // useEffect(() => {
+
+  // }, [])
 
   const checkAuthStatus = useCallback(async () => {
     try {
@@ -42,12 +44,12 @@ export const GuestAuthProvider = ({ children }) => {
 
       if (response.data.authenticated) {
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        setAccessToken(response.data.accessToken);
       } else {
-        localStorage.removeItem("user");
+        setIsAuthenticated(false);
+        setAccessToken(null);
       }
     } catch (error) {
-      localStorage.removeItem("user");
       console.error("Auth status check failed:", error);
     }
   }, []);
@@ -69,20 +71,19 @@ export const GuestAuthProvider = ({ children }) => {
         setUser(response.data.data.user);
         setIsAuthenticated(true);
         localStorage.setItem("user", JSON.stringify(response.data.data.user));
-        localStorage.setItem("accessToken", response.data.data.accessToken);
         setIsLoading(false);
 
         return { success: true };
       }
 
       setIsLoading(false);
+      setIsAuthenticated(false);
       localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
       return { success: false };
     } catch (error) {
       setIsLoading(false);
+      setIsAuthenticated(false);
       localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
       return { success: false, message: error.message || "Unable to login." };
     }
   }, []);
@@ -121,31 +122,32 @@ export const GuestAuthProvider = ({ children }) => {
     }
   }, []);
 
-  const logout = useCallback(async () => {
-    try {
-      const response = await axios.patch(
-        `${baseURl}/guest/logout`,
-        {},
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
+  const logout = useCallback(
+    async (accessToken) => {
+      try {
+        const response = await axios.patch(
+          `${baseURl}/guest/logout`,
+          {},
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
 
-      if (response.status === 200) {
-        console.log("Logout successful");
-        setUser(null);
-        setAccessToken(null);
-        setIsAuthenticated(false);
+        if (response.status === 200) {
+          console.log("Logout successful");
+          setUser(null);
+          setAccessToken(null);
+          setIsAuthenticated(false);
+          localStorage.removeItem("user");
+        }
+      } catch (error) {
         localStorage.removeItem("user");
-        localStorage.removeItem("accessToken");
+        console.error("Logout failed:", error);
       }
-    } catch (error) {
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-      console.error("Logout failed:", error);
-    }
-  }, [accessToken]);
+    },
+    [accessToken]
+  );
 
   const registerGuestByStaff = useCallback(
     async (
