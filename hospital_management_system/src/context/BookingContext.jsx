@@ -17,12 +17,12 @@ export const BookingContextProvider = ({ children }) => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchBookings = useCallback(async () => {
+  const fetchBookings = useCallback(async (accessToken) => {
     try {
       const response = await axios.get(`${baseURl}/booking/requests`, {
         withCredentials: true,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -55,60 +55,66 @@ export const BookingContextProvider = ({ children }) => {
     }
   }, []);
 
-  const checkRoomAvailability = useCallback(async (checkInDate, checkOutDate) => {
-    if (!checkInDate || !checkOutDate) {
-      setError("Both check-in and check-out dates are required.");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `${baseURl}/booking/check-availability`,
-        { checkInDate, checkOutDate },
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
-      setError(null);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching available rooms:", error);
-      setError("Failed to fetch available rooms. Please try again.");
-      throw error;
-    }
-  }, []);
-
-  const submitBooking = useCallback(async (bookingData, userRole) => {
-    const url = `${baseURl}/booking/${
-      userRole === "guest" ? "reserve" : "reserve-by-staff"
-    }`;
-
-    try {
-      const response = await axios.post(url, bookingData, {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
-
-      if (response.status > 400) {
-        return { success: false, message: "Room reservation failed." };
+  const checkRoomAvailability = useCallback(
+    async (checkInDate, checkOutDate, accessToken) => {
+      if (!checkInDate || !checkOutDate) {
+        setError("Both check-in and check-out dates are required.");
+        return;
       }
 
-      setCheckInDate("");
-      setCheckOutDate("");
-      setAvailableRooms([]);
-      setSelectedRoom(null);
+      try {
+        const response = await axios.post(
+          `${baseURl}/booking/check-availability`,
+          { checkInDate, checkOutDate },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        setError(null);
+        return response.data.data;
+      } catch (error) {
+        console.error("Error fetching available rooms:", error);
+        setError("Failed to fetch available rooms. Please try again.");
+        throw error;
+      }
+    },
+    []
+  );
 
-      return { success: true, message: "Room reserved successfully." };
-    } catch (error) {
-      console.error("Error submitting booking:", error);
-      return { success: false, message: "Room reservation failed." };
-    }
-  }, []);
+  const submitBooking = useCallback(
+    async (bookingData, userRole, accessToken) => {
+      const url = `${baseURl}/booking/${
+        userRole === "guest" ? "reserve" : "reserve-by-staff"
+      }`;
+
+      try {
+        const response = await axios.post(url, bookingData, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.status > 400) {
+          return { success: false, message: "Room reservation failed." };
+        }
+
+        setCheckInDate("");
+        setCheckOutDate("");
+        setAvailableRooms([]);
+        setSelectedRoom(null);
+
+        return { success: true, message: "Room reserved successfully." };
+      } catch (error) {
+        console.error("Error submitting booking:", error);
+        return { success: false, message: "Room reservation failed." };
+      }
+    },
+    []
+  );
 
   const values = useMemo(() => ({
     error,

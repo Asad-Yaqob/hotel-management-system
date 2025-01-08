@@ -231,37 +231,40 @@ export const GuestAuthProvider = ({ children }) => {
     [accessToken]
   );
 
-  const fetchGuests = useCallback(async () => {
-    if (!accessToken) return;
+  const fetchGuests = useCallback(
+    async (accessToken) => {
+      if (!accessToken) return;
 
-    setIsLoading(true);
+      setIsLoading(true);
 
-    try {
-      const response = await axios.get(`${baseURl}/guest/all-guests`, {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      try {
+        const response = await axios.get(`${baseURl}/guest/all-guests`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
 
-      if (response.status === 200) {
+        if (response.status === 200) {
+          setIsLoading(false);
+          setAllGuests(response.data.data);
+
+          return { success: true };
+        }
+
         setIsLoading(false);
-        setAllGuests(response.data.data);
-
-        return { success: true };
+        return {
+          success: false,
+          message: response.data || "Failed to fetch data",
+        };
+      } catch (error) {
+        setIsLoading(false);
+        return {
+          success: false,
+          message: error.message || "Failed to fetch data",
+        };
       }
-
-      setIsLoading(false);
-      return {
-        success: false,
-        message: response.data || "Failed to fetch data",
-      };
-    } catch (error) {
-      setIsLoading(false);
-      return {
-        success: false,
-        message: error.message || "Failed to fetch data",
-      };
-    }
-  }, [accessToken]);
+    },
+    [accessToken]
+  );
 
   const fetchGuestDetails = useCallback(
     async (guestId) => {

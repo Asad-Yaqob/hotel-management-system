@@ -6,6 +6,7 @@ import { useBookingContext } from "../../context/BookingContext";
 import { useGuestAuth } from "../../context/auth/GuestAuthContext";
 import { useRoomContext } from "../../context/RoomContext";
 import BookingList from "../components/booking/BookingList";
+import { useStaffAuth } from "../../context/auth/StaffAuthContext";
 
 function App() {
   
@@ -23,14 +24,16 @@ function App() {
     setSelectedRoom,
   } = useBookingContext();
 
+  const { accessToken } = useStaffAuth();
+
   const { allGuests, fetchGuests } = useGuestAuth();
   const { roomData, fetchRooms } = useRoomContext();
 
   useEffect(() => {
     const loadData = async () => {
-      await fetchBookings();
-      await fetchGuests(localStorage.getItem("access_token"));
-      await fetchRooms(localStorage.getItem("access_token"));
+      await fetchBookings(accessToken);
+      await fetchGuests(accessToken);
+      await fetchRooms();
     };
 
     loadData();

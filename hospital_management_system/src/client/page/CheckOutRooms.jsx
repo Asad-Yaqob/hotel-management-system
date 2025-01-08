@@ -5,6 +5,7 @@ import { DateSelector } from "../../dashboard/components/booking/DateSelector";
 import { AvailableRooms } from "../components/booking/AvailableRooms";
 import { HeroImage } from "../components/booking/HeroImage";
 import RoomModelContent from "../components/booking/RoomModelContent";
+import { useGuestAuth } from "../../context/auth/GuestAuthContext";
 
 const CheckOutRooms = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,8 +13,8 @@ const CheckOutRooms = () => {
   const [checkOutDate, setCheckOutDate] = useState("");
   const [errors, setErrors] = useState({ checkIn: "", checkOut: "" });
 
-  const { availableRooms, handleSearch, selectedRoom, setSelectedRoom } =
-    useBookingContext();
+  const { availableRooms, handleSearch, selectedRoom, setSelectedRoom } = useBookingContext();
+  const { accessToken } = useGuestAuth()
 
   const handleBookNow = async (checkInDate, checkOutDate) => {
 
@@ -32,9 +33,8 @@ const CheckOutRooms = () => {
 
     setErrors({ checkIn: "", checkOut: "" });
 
-    const token = localStorage.getItem("access_token");
 
-    if (!token) {
+    if (!accessToken) {
       toast.dismiss();
       toast.info("Please login to preceed further.");
       return;

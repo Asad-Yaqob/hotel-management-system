@@ -13,17 +13,17 @@ const StaffAuthContext = createContext(null);
 export const StaffAuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("user")) || {};
-    } catch {
+      const storedUser = localStorage.getItem("user");
+      return storedUser && storedUser !== "undefined"
+        ? JSON.parse(storedUser)
+        : {};
+    } catch (error) {
+      console.error("Error parsing user data:", error);
       return {};
     }
   });
-  const [accessToken, setAccessToken] = useState(
-    () => localStorage.getItem("accessToken") || null
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => !!localStorage.getItem("user")
-  );
+  const [accessToken, setAccessToken] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentStaff, setCurrentStaff] = useState(null);
   const [allStaff, setAllStaff] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,37 +33,51 @@ export const StaffAuthProvider = ({ children }) => {
       const response = await axios.get(`${baseURl}/staff/auth-status`, {
         withCredentials: true,
       });
+
       if (response.data.authenticated) {
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        setAccessToken(response.data.accessToken);
       } else {
         setIsAuthenticated(false);
-        localStorage.removeItem("user");
+        setAccessToken(false);
       }
     } catch (error) {
       setIsAuthenticated(false);
-      localStorage.removeItem("user");
+      setAccessToken(false);
       console.error("Auth status check failed:", error);
     }
   }, []);
 
-
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
+
     try {
       const response = await axios.post(
         `${baseURl}/staff/login`,
         { email, password },
         { withCredentials: true }
       );
-      const { accessToken, data: userData } = response.data.data;
-      setUser(userData);
-      setIsAuthenticated(true);
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("accessToken", accessToken);
-      setAccessToken(accessToken);
-      return { success: true };
+
+      const { data: userData } = response.data.data;
+
+      if (userData) {
+        setUser(userData);
+        setIsAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        return { success: true };
+      } else {
+        setUser({});
+        setIsAuthenticated(false);
+        localStorage.removeItem("user");
+
+        return { success: false };
+      }
     } catch (error) {
+      setIsLoading(false);
+      setUser({});
+      setIsAuthenticated(false);
+      localStorage.removeItem("user");
       console.error("Login failed:", error);
       return { success: false, message: error.message || "Unable to login." };
     } finally {
@@ -89,29 +103,32 @@ export const StaffAuthProvider = ({ children }) => {
     }
   }, []);
 
-  const logout = useCallback(async () => {
-    setUser({});
-    setAccessToken(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    try {
-      const response = await axios.patch(
-        `${baseURl}/staff/logout`,
-        {},
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      return response.status === 200
-        ? { success: true }
-        : { success: false, message: "Logout failed" };
-    } catch (error) {
-      console.error("Logout failed:", error);
-      return { success: false, message: "Logout failed" };
-    }
-  }, [accessToken]);
+  const logout = useCallback(
+    async (accessToken) => {
+      setUser({});
+      setAccessToken(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      try {
+        const response = await axios.patch(
+          `${baseURl}/staff/logout`,
+          {},
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+        return response.status === 200
+          ? { success: true }
+          : { success: false, message: "Logout failed" };
+      } catch (error) {
+        console.error("Logout failed:", error);
+        return { success: false, message: "Logout failed" };
+      }
+    },
+    [accessToken]
+  );
 
   const updateAvatar = useCallback(
     async (image) => {
