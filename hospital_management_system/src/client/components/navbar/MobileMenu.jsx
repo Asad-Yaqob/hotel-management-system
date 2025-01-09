@@ -16,16 +16,6 @@ export const MobileMenu = ({ logout, isAuthenticated }) => {
           Home
         </NavLink>
         <NavLink
-          to="/Pages"
-          className={({ isActive }) =>
-            isActive
-              ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
-              : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
-          }
-        >
-          Pages
-        </NavLink>
-        <NavLink
           to="/Gallery"
           className={({ isActive }) =>
             isActive
@@ -46,7 +36,7 @@ export const MobileMenu = ({ logout, isAuthenticated }) => {
           Reserve Room
         </NavLink>
         <NavLink
-          to="/Blog"
+          to="/About"
           className={({ isActive }) =>
             isActive
               ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
@@ -54,16 +44,6 @@ export const MobileMenu = ({ logout, isAuthenticated }) => {
           }
         >
           Blog
-        </NavLink>
-        <NavLink
-          to="/Contact"
-          className={({ isActive }) =>
-            isActive
-              ? "w-full px-6 py-4 border-b border-gray-700 bg-gray-700 transition duration-300 text-center"
-              : "w-full px-6 py-4 border-b border-gray-700 hover:bg-gray-700 transition duration-300 text-center"
-          }
-        >
-          Contact
         </NavLink>
         {!isAuthenticated ? (
           <Link
