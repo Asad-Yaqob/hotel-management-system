@@ -34,7 +34,7 @@ const Navbar = () => {
       />
 
       {menuOpen && (
-        <MobileMenu logout={logout} isAuthenticated={isAuthenticated} />
+        <MobileMenu logout={logout} isAuthenticated={isAuthenticated} setMenuOpen={setMenuOpen} />
       )}
     </div>
   );
