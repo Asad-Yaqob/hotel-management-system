@@ -25,7 +25,7 @@ const SideBar = () => {
 
   return (
     <div
-      className={`fixed md:static bg-gray-300  h-screen overflow-y-auto py-5 flex flex-col z-20 transition-all duration-500 ${
+      className={`fixed md:static bg-gray-300  h-screen overflow-y-auto py-5 flex flex-col z-40 transition-all duration-500 ${
         isSideBar ? "w-[400px]" : "w-0"
       }`}
     >

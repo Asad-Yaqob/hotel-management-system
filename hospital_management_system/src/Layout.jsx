@@ -9,13 +9,14 @@ import { useStaffAuth } from "./context/auth/StaffAuthContext";
 function DashboardLayout() {
 
   const { user } = useStaffAuth();
+  const navigate = useNavigate();
 
   // Case 2: If the user's role is invalid, show an error page
   if (!roles.includes(user?.role)) {
     return (
       <Error
         message="Only Staff can access this dashboard. Sorry"
-        onRetry={() => useNavigate("/")}
+        onRetry={navigate}
       />
     );
   }
@@ -25,7 +26,7 @@ function DashboardLayout() {
     return (
       <Error
         message="Your account is deactivated. Please contact the administrator."
-        onRetry={() => useNavigate("/")}
+        onRetry={navigate}
       />
     );
   }
