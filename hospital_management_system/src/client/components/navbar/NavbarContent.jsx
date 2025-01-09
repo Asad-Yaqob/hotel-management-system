@@ -2,7 +2,7 @@ import React from 'react'
 import { RiMenu2Fill } from 'react-icons/ri';
 import { NavLink, Link } from 'react-router-dom';
 
-export const NavbarContent = ({ logout, setMenuOpen, isAuthenticated }) => {
+export const NavbarContent = ({ logout, setMenuOpen, menuOpen, isAuthenticated }) => {
   return (
     <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-700 rounded-b-xl shadow-md">
       <div className="hidden md:flex">

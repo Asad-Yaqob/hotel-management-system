@@ -30,10 +30,12 @@ const Navbar = () => {
         isAuthenticated={isAuthenticated}
         logout={logout}
         setMenuOpen={setMenuOpen}
+        menuOpen={menuOpen}
       />
 
-      {menuOpen && 
-        <MobileMenu />}
+      {menuOpen && (
+        <MobileMenu logout={logout} isAuthenticated={isAuthenticated} />
+      )}
     </div>
   );
 };
